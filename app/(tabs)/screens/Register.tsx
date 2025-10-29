@@ -1,65 +1,49 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { Link, router } from "expo-router"; // ✅ Usa o sistema de rotas do Expo
 
-// Tipagem das rotas da navegação
-type RootStackParamList = {
-  Register: undefined;
-  Login: undefined;
-  Dashboard: undefined;
-};
-
-type RegisterScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Register"
->;
-
-type Props = {
-  navigation: RegisterScreenNavigationProp;
-};
-
-export default function RegisterScreen({ navigation }: Props) {
+export default function Register() {
   // Estados locais para armazenar os dados do usuário
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-
-  // Mensagem de erro 
   const [error, setError] = useState<string>("");
 
   // Função chamada ao clicar em "Registrar"
   const handleRegister = () => {
-    // Validação básica dos campos
     if (!name || !email || !password || !confirmPassword) {
       setError("Preencha todos os campos!");
       return;
     }
 
-    // Regex simples para validar formato de e-mail
-    const re = /^\S+@\S+\.\S+$/; // expressão regular básica
+    const re = /^\S+@\S+\.\S+$/;
     if (!re.test(email)) {
       setError("E-mail inválido.");
       return;
     }
 
-    // Senhas diferentes
     if (password !== confirmPassword) {
       setError("As senhas não coincidem.");
       return;
     }
 
-    // Senha muito curta
     if (password.length < 6) {
       setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
-    // Se tudo estiver certo, limpa os erros e prossegue
     setError("");
     Alert.alert("Sucesso 🎉", "Conta criada com sucesso!");
-
-    navigation.navigate("Dashboard");
+    
+    router.push("/(tabs)/screens/Dashboard");
   };
 
   return (
@@ -108,9 +92,15 @@ export default function RegisterScreen({ navigation }: Props) {
         <Text style={styles.buttonText}>Registrar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.linkText}>Já tem uma conta? Faça login</Text>
-      </TouchableOpacity>
+      {/* Link para Login */}
+      <View style={styles.loginContainer}>
+        <Text style={styles.linkText}>
+          Já tem uma conta?{" "}
+          <Link href ="/(tabs)/screens/Login" style={styles.link}>
+            Faça login
+          </Link>
+        </Text>
+      </View>
     </View>
   );
 }
@@ -119,7 +109,7 @@ export default function RegisterScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#387373", 
+    backgroundColor: "#387373",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -139,7 +129,7 @@ const styles = StyleSheet.create({
     height: 48,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 6,
+    color: "#fff",
   },
   button: {
     backgroundColor: "#2E5E5E",
@@ -157,9 +147,16 @@ const styles = StyleSheet.create({
     color: "#FFD1D1",
     marginBottom: 10,
   },
+  loginContainer: {
+    marginTop: 15,
+    alignItems: "center",
+  },
   linkText: {
     color: "#fff",
-    marginTop: 15,
-    textDecorationLine: "underline",
+    textAlign: "center",
+  },
+  link: {
+    color: "#000",
+    fontWeight: "bold",
   },
 });
