@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { Link } from "expo-router"; // ✅ Import necessário para o Link
+import { Link } from "expo-router"; 
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -114,7 +114,7 @@ export default function Login() {
           </View>
 
           <TouchableOpacity
-            onPress={() => alert("Tela de recuperação de senha (implement)")}>
+            onPress={() => alert("Tela de recuperação de senha (implementar)")}>
             <Text style={styles.forgot}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
