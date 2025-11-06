@@ -1,49 +1,48 @@
+import { Link } from "expo-router";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import { Link, router } from "expo-router"; // ✅ Usa o sistema de rotas do Expo
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-export default function Register() {
+export default function RegisterScreen() {
   // Estados locais para armazenar os dados do usuário
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  // Mensagem de erro 
   const [error, setError] = useState<string>("");
 
   // Função chamada ao clicar em "Registrar"
   const handleRegister = () => {
+    // Validação básica dos campos
     if (!name || !email || !password || !confirmPassword) {
       setError("Preencha todos os campos!");
       return;
     }
 
-    const re = /^\S+@\S+\.\S+$/;
+    // Regex simples para validar formato de e-mail
+    const re = /^\S+@\S+\.\S+$/; // expressão regular básica
     if (!re.test(email)) {
       setError("E-mail inválido.");
       return;
     }
 
+    // Senhas diferentes
     if (password !== confirmPassword) {
       setError("As senhas não coincidem.");
       return;
     }
 
+    // Senha muito curta
     if (password.length < 6) {
       setError("A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
+    // Se tudo estiver certo, limpa os erros e prossegue
     setError("");
     Alert.alert("Sucesso 🎉", "Conta criada com sucesso!");
-    
-    router.push("/(tabs)/screens/Dashboard");
+
   };
 
   return (
@@ -92,15 +91,9 @@ export default function Register() {
         <Text style={styles.buttonText}>Registrar</Text>
       </TouchableOpacity>
 
-      {/* Link para Login */}
-      <View style={styles.loginContainer}>
-        <Text style={styles.linkText}>
-          Já tem uma conta?{" "}
-          <Link href ="/(tabs)/screens/Login" style={styles.link}>
-            Faça login
-          </Link>
-        </Text>
-      </View>
+      <Link href={"/login"}>
+          <Text style={styles.linkText}>Já tem uma conta? Faça login</Text>
+      </Link>
     </View>
   );
 }
@@ -109,7 +102,7 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#387373",
+    backgroundColor: "#387373", 
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -129,7 +122,7 @@ const styles = StyleSheet.create({
     height: 48,
     alignItems: "center",
     justifyContent: "center",
-    color: "#fff",
+    marginTop: 6,
   },
   button: {
     backgroundColor: "#2E5E5E",
@@ -147,16 +140,9 @@ const styles = StyleSheet.create({
     color: "#FFD1D1",
     marginBottom: 10,
   },
-  loginContainer: {
-    marginTop: 15,
-    alignItems: "center",
-  },
   linkText: {
     color: "#fff",
-    textAlign: "center",
-  },
-  link: {
-    color: "#000",
-    fontWeight: "bold",
+    marginTop: 15,
+    textDecorationLine: "underline",
   },
 });

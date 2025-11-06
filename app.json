@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Timeless",
-    "slug": "Timeless",
+    "name": "timeless",
+    "slug": "timeless",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
