@@ -12,9 +12,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { Link } from "expo-router";
-import BasicImage from "@/components/BasicImage";
-
 
 
 export default function LoginScreen() {
