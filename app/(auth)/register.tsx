@@ -1,6 +1,10 @@
-import { Link } from "expo-router";
+import api from "@/services/api";
+import { LoginResponse, RegisterResponse } from "@/types/Auth";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegisterScreen() {
   // Estados locais para armazenar os dados do usuário
@@ -8,18 +12,24 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [birthday, setBirthday] = useState<Date | null>(null)
+  const [showPicker, setShowPicker] = useState(false);
 
-  // Mensagem de erro 
+  // Mensagem de erro
   const [error, setError] = useState<string>("");
 
   // Função chamada ao clicar em "Registrar"
-  const handleRegister = () => {
+  const handleRegister = async () => {
     // Validação básica dos campos
     if (!name || !email || !password || !confirmPassword) {
       setError("Preencha todos os campos!");
       return;
     }
-
+    
+    if (!birthday) {
+      setError("Selecione sua data de nascimento!");
+      return;
+    }
     // Regex simples para validar formato de e-mail
     const re = /^\S+@\S+\.\S+$/; // expressão regular básica
     if (!re.test(email)) {
@@ -41,7 +51,31 @@ export default function RegisterScreen() {
 
     // Se tudo estiver certo, limpa os erros e prossegue
     setError("");
-    Alert.alert("Sucesso 🎉", "Conta criada com sucesso!");
+
+    try {
+      const response = await api.post<RegisterResponse>("/users",{
+          email,
+          name,
+          password,
+          birthday: birthday.toISOString().split("T")[0],
+      })
+      if (response.status !== 201) {
+        setError("Email já está em uso")
+        return
+      }
+      const loginResponse = await api.post<LoginResponse>('/login', { email, password });
+      const { token, user } = loginResponse.data;
+  
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user))
+      console.log(JSON.stringify(user))
+      router.replace("/(tabs)")
+
+    } catch (error: any) {
+      console.log(error)
+      Alert.alert('Erro', error.response?.data?.message || 'Falha ao registrar');
+
+    }
 
   };
 
@@ -67,6 +101,49 @@ export default function RegisterScreen() {
         autoCapitalize="none"
       />
 
+<TouchableOpacity
+        style={styles.input}
+        onPress={() => setShowPicker(true)}
+      >
+        <Text style={{ color: birthday ? "#fff" : "#E0E0E0" }}>
+          {birthday
+            ? birthday.toLocaleDateString("pt-BR")
+            : "Selecionar data de nascimento"}
+        </Text>
+      </TouchableOpacity>
+
+      {Platform.OS === "web" ? (
+        // 💻 navegador / PC
+        <input
+          type="date"
+
+          value={birthday ? birthday.toISOString().substring(0, 10) : ""}
+          onChange={(e) => {
+            const selected = new Date(e.target.value);
+            setBirthday(selected);
+          }}
+          style={{
+            padding: 10,
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            fontSize: 16,
+            width: "100%",
+          }}
+        />
+      ) : (
+        // 📱 Android / iOS
+        showPicker && (
+          <DateTimePicker
+            value={birthday || new Date(2000, 0, 1)}
+            mode="date"
+            display="default"
+            onChange={(event, date) => {
+              setShowPicker(false);
+              if (date) setBirthday(date);
+            }}
+          />
+        )
+      )}
       <TextInput
         style={styles.input}
         placeholder="Senha"
@@ -87,9 +164,13 @@ export default function RegisterScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+      <Pressable style={styles.button} onPress={async () => {
+        console.log('click')
+        await handleRegister()
+        }
+      }>
         <Text style={styles.buttonText}>Registrar</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <Link href={"/login"}>
           <Text style={styles.linkText}>Já tem uma conta? Faça login</Text>
