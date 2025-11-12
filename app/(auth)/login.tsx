@@ -1,75 +1,59 @@
+import { useAppData } from "@/contexts/AppDataContext";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  ActivityIndicator,
-  Image,
+  View
 } from "react-native";
 import { Link } from "expo-router";
 import BasicImage from "@/components/BasicImage";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [secure, setSecure] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
+
+export default function LoginScreen() {
+  // Estados que armazenam dados e controle da interface
+  const {setLogged} = useAppData()
+  const [email, setEmail] = useState(""); // guarda o e-mail digitado
+  const [password, setPassword] = useState(""); // guarda a senha digitada
+  const [secure, setSecure] = useState(true); // controla se a senha está visível
+  const [loading, setLoading] = useState(false); // indica se o botão está carregando
+
+  // Função para validar o e-mail e senha
   const validate = () => {
-    setError("");
 
-    if (!email) {
-      setError("Preencha o e-mail.");
-      return false;
-    }
-
-    const re = /^\S+@\S+\.\S+$/;
-    if (!re.test(email)) {
-      setError("E-mail inválido.");
-      return false;
-    }
-
-    if (!password) {
-      setError("Preencha a senha.");
-      return false;
-    }
-
-    if (password.length < 6) {
-      setError("Senha muito curta (mín 6 caracteres).");
-      return false;
-    }
-
-    return true;
+    return true; // retorna true se tudo estiver válido
   };
 
+  // Função chamada ao clicar em "Entrar"
   const handleLogin = () => {
-    if (!validate()) return;
-    setLoading(true);
+    if (!validate()) return; // se for inválido, para aqui
+    setLoading(true); // ativa o carregamento
 
+    // Simula um login assíncrono (aqui entraria sua API de autenticação)
     setTimeout(() => {
-      setLoading(false);
-      if (password === "123456") {
-        alert("Login bem-sucedido! (navegação aqui)");
-      } else {
-        setError("Credenciais incorretas.");
-      }
+      setLoading(false); // desativa o carregamento
     }, 1200);
+    setLogged(true)
+    router.replace("/(tabs)"); // navega pro app principal
   };
+
 
   return (
+    // KeyboardAvoidingView evita que o teclado cubra os inputs
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {/* Fecha o teclado ao tocar fora */}
         <View style={styles.inner}>
+          {/* Logo da aplicação */}
           <Image
             source={require("../../../assets/images/icon.png")}
             style={styles.logo}
@@ -79,8 +63,8 @@ export default function Login() {
           <Text style={styles.title}>Bem-vindo</Text>
           <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
 
+          {/* Campo de e-mail */}
           <TextInput
             style={styles.input}
             placeholder="E-mail"
@@ -93,6 +77,7 @@ export default function Login() {
             textContentType="emailAddress"
           />
 
+          {/* Campo de senha + botão de mostrar/ocultar */}
           <View style={styles.passwordRow}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
@@ -106,6 +91,7 @@ export default function Login() {
             <TouchableOpacity
               onPress={() => setSecure((s) => !s)}
               style={styles.showBtn}
+              accessible
               accessibilityLabel={secure ? "Mostrar senha" : "Ocultar senha"}
             >
               <Text style={styles.showBtnText}>
@@ -114,16 +100,14 @@ export default function Login() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => alert("Tela de recuperação de senha (implementar)")}
-          >
-            <Text style={styles.forgot}>Esqueceu a senha?</Text>
-          </TouchableOpacity>
 
+          {/* Botão principal de login */}
           <TouchableOpacity
             style={[styles.btn, loading ? styles.btnDisabled : null]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
           >
             {loading ? (
               <ActivityIndicator />
@@ -132,20 +116,22 @@ export default function Login() {
             )}
           </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>
-              Não tem uma conta?{" "}
-              <Link href="/(tabs)/screens/Register" style={styles.registerLink}>
-                Faça seu cadastro
-              </Link>
-            </Text>
+          {/* Link para registro */}
+          <View style={styles.rowSignup}>
+            <Text style={styles.text}>Não tem conta?</Text>
+              
+            <Link href="/register">
+              <Text style={styles.signup}> Cadastre-se</Text>
+            </Link>
           </View>
+
+          <View style={{ height: 40 }} />
         </View>
-      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
 
+// Estilos visuais da tela
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -183,7 +169,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 12,
     backgroundColor: "#4B9F9F",
-    color: "#fff",
   },
   passwordRow: {
     flexDirection: "row",
@@ -218,16 +203,17 @@ const styles = StyleSheet.create({
     color: "#387373",
     fontWeight: "700",
   },
-  registerContainer: {
+  rowSignup: {
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 18,
-    alignItems: "center",
   },
-  registerText: {
+  text: {
     color: "#fff",
   },
-  registerLink: {
-    color: "#000",
-    fontWeight: "700",
+  signup: {
+    color: "#000000ff",
+    fontWeight: "600",
   },
   error: {
     color: "#ff3b30",
