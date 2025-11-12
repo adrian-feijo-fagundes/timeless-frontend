@@ -12,7 +12,8 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { Link } from "expo-router"; 
+import { Link } from "expo-router";
+import BasicImage from "@/components/BasicImage";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -55,7 +56,7 @@ export default function Login() {
     setTimeout(() => {
       setLoading(false);
       if (password === "123456") {
-        alert("Login bem-sucedido! (coloque navegação aqui)");
+        alert("Login bem-sucedido! (navegação aqui)");
       } else {
         setError("Credenciais incorretas.");
       }
@@ -70,7 +71,7 @@ export default function Login() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
           <Image
-            source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+            source={require("../../../assets/images/icon.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -114,7 +115,8 @@ export default function Login() {
           </View>
 
           <TouchableOpacity
-            onPress={() => alert("Tela de recuperação de senha (implementar)")}>
+            onPress={() => alert("Tela de recuperação de senha (implementar)")}
+          >
             <Text style={styles.forgot}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
     height: 64,
     alignSelf: "center",
     marginBottom: 16,
+    borderRadius: "10%"
   },
   title: {
     fontSize: 24,
