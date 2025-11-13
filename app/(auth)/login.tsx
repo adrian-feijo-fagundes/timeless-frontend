@@ -1,8 +1,12 @@
 import { useAppData } from "@/contexts/AppDataContext";
+import api from "@/services/api";
+import { LoginResponse } from "@/types/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -22,23 +26,28 @@ export default function LoginScreen() {
   const [secure, setSecure] = useState(true); // controla se a senha está visível
   const [loading, setLoading] = useState(false); // indica se o botão está carregando
 
-  // Função para validar o e-mail e senha
-  const validate = () => {
 
-    return true; // retorna true se tudo estiver válido
-  };
 
   // Função chamada ao clicar em "Entrar"
-  const handleLogin = () => {
-    if (!validate()) return; // se for inválido, para aqui
+  const handleLogin = async () => {
     setLoading(true); // ativa o carregamento
 
+    try {
+      const loginResponse = await api.post<LoginResponse>('/login', { email, password });
+      const { token, user } = loginResponse.data;
+  
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user))
+      console.log(JSON.stringify(user))
+
+      router.replace("/(tabs)"); // navega pro app principal
+      setLogged(true)
+    } catch (error) {
+      Alert.alert("Erro: " + error)
+    } 
+    setLoading(false); // desativa o carregamento
     // Simula um login assíncrono (aqui entraria sua API de autenticação)
-    setTimeout(() => {
-      setLoading(false); // desativa o carregamento
-    }, 1200);
-    setLogged(true)
-    router.replace("/(tabs)"); // navega pro app principal
+    
   };
 
 
@@ -52,7 +61,7 @@ export default function LoginScreen() {
         <View style={styles.inner}>
           {/* Logo da aplicação */}
           <Image
-            source={require("../../../assets/images/icon.png")}
+            source={require("../../assets/images/icon.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -101,7 +110,7 @@ export default function LoginScreen() {
           {/* Botão principal de login */}
           <TouchableOpacity
             style={[styles.btn, loading ? styles.btnDisabled : null]}
-            onPress={handleLogin}
+            onPress={async () => await handleLogin()}
             disabled={loading}
             accessibilityRole="button"
             accessibilityState={{ disabled: loading }}
@@ -144,7 +153,6 @@ const styles = StyleSheet.create({
     height: 64,
     alignSelf: "center",
     marginBottom: 16,
-    borderRadius: "10%"
   },
   title: {
     fontSize: 24,
