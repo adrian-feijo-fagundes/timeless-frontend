@@ -1,0 +1,228 @@
+import { useAppData } from "@/contexts/AppDataContext";
+import api from "@/services/api";
+import { LoginResponse } from "@/types/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link, router } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+
+
+export default function LoginScreen() {
+  // Estados que armazenam dados e controle da interface
+  const {setLogged} = useAppData()
+  const [email, setEmail] = useState(""); // guarda o e-mail digitado
+  const [password, setPassword] = useState(""); // guarda a senha digitada
+  const [secure, setSecure] = useState(true); // controla se a senha está visível
+  const [loading, setLoading] = useState(false); // indica se o botão está carregando
+
+
+
+  // Função chamada ao clicar em "Entrar"
+  const handleLogin = async () => {
+    setLoading(true); // ativa o carregamento
+
+    try {
+      const loginResponse = await api.post<LoginResponse>('/login', { email, password });
+      const { token, user } = loginResponse.data;
+  
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user))
+      console.log(JSON.stringify(user))
+
+      router.replace("/(tabs)"); // navega pro app principal
+      setLogged(true)
+    } catch (error) {
+      Alert.alert("Erro: " + error)
+    } 
+    setLoading(false); // desativa o carregamento
+    // Simula um login assíncrono (aqui entraria sua API de autenticação)
+    
+  };
+
+
+  return (
+    // KeyboardAvoidingView evita que o teclado cubra os inputs
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      {/* Fecha o teclado ao tocar fora */}
+        <View style={styles.inner}>
+          {/* Logo da aplicação */}
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+
+          <Text style={styles.title}>Bem-vindo</Text>
+          <Text style={styles.subtitle}>Faça login para continuar</Text>
+
+
+          {/* Campo de e-mail */}
+          <TextInput
+            style={styles.input}
+            placeholder="E-mail"
+            placeholderTextColor="#ffffffff"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+            textContentType="emailAddress"
+          />
+
+          {/* Campo de senha + botão de mostrar/ocultar */}
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Senha"
+              placeholderTextColor="#ffffffff"
+              secureTextEntry={secure}
+              value={password}
+              onChangeText={setPassword}
+              textContentType="password"
+            />
+            <TouchableOpacity
+              onPress={() => setSecure((s) => !s)}
+              style={styles.showBtn}
+              accessible
+              accessibilityLabel={secure ? "Mostrar senha" : "Ocultar senha"}
+            >
+              <Text style={styles.showBtnText}>
+                {secure ? "Mostrar" : "Ocultar"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+
+          {/* Botão principal de login */}
+          <TouchableOpacity
+            style={[styles.btn, loading ? styles.btnDisabled : null]}
+            onPress={async () => await handleLogin()}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={styles.btnText}>Entrar</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Link para registro */}
+          <View style={styles.rowSignup}>
+            <Text style={styles.text}>Não tem conta?</Text>
+              
+            <Link href="/register">
+              <Text style={styles.signup}> Cadastre-se</Text>
+            </Link>
+          </View>
+
+          <View style={{ height: 40 }} />
+        </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+// Estilos visuais da tela
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#387373",
+  },
+  inner: {
+    flex: 1,
+    padding: 24,
+    justifyContent: "center",
+  },
+  logo: {
+    width: 64,
+    height: 64,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 6,
+    color: "#fff",
+  },
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 18,
+    color: "#e0e0e0",
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#ffffffff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    backgroundColor: "#4B9F9F",
+  },
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  showBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  showBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  forgot: {
+    alignSelf: "flex-end",
+    color: "#000000ff",
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  btn: {
+    height: 48,
+    backgroundColor: "#ffffffff",
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 6,
+  },
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  btnText: {
+    color: "#387373",
+    fontWeight: "700",
+  },
+  rowSignup: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 18,
+  },
+  text: {
+    color: "#fff",
+  },
+  signup: {
+    color: "#000000ff",
+    fontWeight: "600",
+  },
+  error: {
+    color: "#ff3b30",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+});
