@@ -1,4 +1,4 @@
-import { useAppData } from "@/contexts/AppDataContext";
+{/*import { useAppData } from "@/contexts/AppDataContext";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -113,3 +113,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+*/}

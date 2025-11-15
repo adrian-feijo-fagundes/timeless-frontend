@@ -5,61 +5,59 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
-  View
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
+import AuthTextInput from "@/components/AuthTextInput";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
+import AuthButton from "@/components/AuthButton";
+import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function LoginScreen() {
-  // Estados que armazenam dados e controle da interface
-  const {setLogged} = useAppData()
-  const [email, setEmail] = useState(""); // guarda o e-mail digitado
-  const [password, setPassword] = useState(""); // guarda a senha digitada
-  const [secure, setSecure] = useState(true); // controla se a senha está visível
-  const [loading, setLoading] = useState(false); // indica se o botão está carregando
+  const { setLogged } = useAppData();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-
-  // Função chamada ao clicar em "Entrar"
   const handleLogin = async () => {
-    setLoading(true); // ativa o carregamento
+    setLoading(true);
 
     try {
-      const loginResponse = await api.post<LoginResponse>('/login', { email, password });
-      const { token, user } = loginResponse.data;
-  
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('user', JSON.stringify(user))
-      console.log(JSON.stringify(user))
+      const response = await api.post<LoginResponse>("/login", {
+        email,
+        password,
+      });
 
-      router.replace("/(tabs)"); // navega pro app principal
-      setLogged(true)
-    } catch (error) {
-      Alert.alert("Erro: " + error)
-    } 
-    setLoading(false); // desativa o carregamento
-    // Simula um login assíncrono (aqui entraria sua API de autenticação)
-    
+      const { token, user } = response.data;
+
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      setLogged(true);
+      router.replace("/(tabs)");
+    } catch (err) {
+      Alert.alert("Erro", "Credenciais inválidas");
+    }
+
+    setLoading(false);
   };
 
-
   return (
-    // KeyboardAvoidingView evita que o teclado cubra os inputs
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      {/* Fecha o teclado ao tocar fora */}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View style={styles.inner}>
-          {/* Logo da aplicação */}
           <Image
             source={require("../../assets/images/icon.png")}
             style={styles.logo}
@@ -69,75 +67,44 @@ export default function LoginScreen() {
           <Text style={styles.title}>Bem-vindo</Text>
           <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-
-          {/* Campo de e-mail */}
-          <TextInput
-            style={styles.input}
+          {/* EMAIL */}
+          <AuthTextInput
             placeholder="E-mail"
-            placeholderTextColor="#ffffffff"
             keyboardType="email-address"
             autoCapitalize="none"
-            autoComplete="email"
             value={email}
             onChangeText={setEmail}
-            textContentType="emailAddress"
           />
 
-          {/* Campo de senha + botão de mostrar/ocultar */}
-          <View style={styles.passwordRow}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              placeholder="Senha"
-              placeholderTextColor="#ffffffff"
-              secureTextEntry={secure}
-              value={password}
-              onChangeText={setPassword}
-              textContentType="password"
-            />
-            <TouchableOpacity
-              onPress={() => setSecure((s) => !s)}
-              style={styles.showBtn}
-              accessible
-              accessibilityLabel={secure ? "Mostrar senha" : "Ocultar senha"}
-            >
-              <Text style={styles.showBtnText}>
-                {secure ? "Mostrar" : "Ocultar"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {/* SENHA */}
+          <AuthPasswordInput
+            placeholder="Senha"
+            value={password}
+            onChangeText={setPassword}
+          />
 
+          {/* BOTÃO COM AUTHBUTTON */}
+          <AuthButton
+            title="Entrar"
+            onPress={handleLogin}
+            loading={loading}
+            style={{ marginTop: 12 }}
+          />
 
-          {/* Botão principal de login */}
-          <TouchableOpacity
-            style={[styles.btn, loading ? styles.btnDisabled : null]}
-            onPress={async () => await handleLogin()}
-            disabled={loading}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: loading }}
-          >
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <Text style={styles.btnText}>Entrar</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Link para registro */}
+          {/* LINK PARA CADASTRAR */}
           <View style={styles.rowSignup}>
             <Text style={styles.text}>Não tem conta?</Text>
-              
+
             <Link href="/register">
               <Text style={styles.signup}> Cadastre-se</Text>
             </Link>
           </View>
-
-          <View style={{ height: 40 }} />
         </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
-// Estilos visuais da tela
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -149,80 +116,35 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logo: {
-    width: 64,
-    height: 64,
+    width: 80,
+    height: 80,
     alignSelf: "center",
     marginBottom: 16,
+    borderRadius: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: 6,
     color: "#fff",
+    marginBottom: 4,
   },
   subtitle: {
     textAlign: "center",
-    marginBottom: 18,
-    color: "#e0e0e0",
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#ffffffff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    backgroundColor: "#4B9F9F",
-  },
-  passwordRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  showBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  showBtnText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  forgot: {
-    alignSelf: "flex-end",
-    color: "#000000ff",
-    marginTop: 6,
-    marginBottom: 12,
-  },
-  btn: {
-    height: 48,
-    backgroundColor: "#ffffffff",
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 6,
-  },
-  btnDisabled: {
-    opacity: 0.6,
-  },
-  btnText: {
-    color: "#387373",
-    fontWeight: "700",
+    color: "#d9d9d9",
+    marginBottom: 20,
   },
   rowSignup: {
+    marginTop: 18,
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 18,
   },
   text: {
     color: "#fff",
   },
   signup: {
-    color: "#000000ff",
-    fontWeight: "600",
-  },
-  error: {
-    color: "#ff3b30",
-    marginBottom: 8,
-    textAlign: "center",
+    color: "#000",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
 });
