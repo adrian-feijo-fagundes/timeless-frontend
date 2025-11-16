@@ -1,160 +1,202 @@
-{/**import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, StyleSheet } from "react-native";
-
-import { TaskItem } from "@/components/TaskItem";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  StyleSheet,
+} from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
-interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: number;
-}
+import { TaskModal } from "@/components/TaskModal";
+import { TaskItem } from "@/components/TaskItem";
+import { XPBar } from "@/components/gamification/XPBar";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
+import { useGamification } from "@/components/gamification/useGamification";
 
-type FilterType = "all" | "active" | "completed";
+export default function TasksScreen() {
+  const { xp, streak, addXP, registerStreak } = useGamification();
 
-export default function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    // Carregar tarefas salvas
-  }, []);
+  const [filter, setFilter] = useState<"all"|"active"|"completed"|"today">("all");
 
-  useEffect(() => {
-    // Salvar tarefas no async storage se quiser
-  }, [tasks]);
-
-  const addTask = (text: string) => {
-    const newTask: Task = {
+  const addTask = (task: any) => {
+    const newTask = {
       id: Date.now().toString(),
-      text,
+      title: task.title,
+      desc: task.desc || "",
+      isHabit: task.isHabit,
       completed: false,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     };
+
     setTasks([newTask, ...tasks]);
+    setModalVisible(false);
   };
 
   const toggleTask = (id: string) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
+      prev.map((t) => {
+        if (t.id !== id) return t;
+
+        if (!t.completed) {
+          addXP(10);
+          registerStreak();
+        }
+
+        return { ...t, completed: !t.completed };
+      })
     );
   };
 
   const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const clearCompleted = () => {
-    setTasks((prev) => prev.filter((task) => !task.completed));
-  };
+  /** ===== Filtros ===== */
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === "active") return !task.completed;
-    if (filter === "completed") return task.completed;
-    return true;
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === "active") return !t.completed;
+    if (filter === "completed") return t.completed;
+    if (filter === "today") {
+      const d = new Date(t.createdAt);
+      d.setHours(0,0,0,0);
+      return d.getTime() === today.getTime();
+    }
+    return true; // all
   });
 
-  const activeCount = tasks.filter((t) => !t.completed).length;
-  const completedCount = tasks.filter((t) => t.completed).length;
-
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <FontAwesome name="tasks" size={28} color="#387373" />
-        <Text style={styles.title}>Minhas Tarefas</Text>
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.safe}>
+        <ScrollView style={styles.container}>
 
-      <Text style={styles.subtitle}>Organize seu dia de forma simples!</Text>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <FontAwesome name="tasks" size={28} color="#387373" />
+            <Text style={styles.title}>Minhas Tarefas</Text>
+          </View>
 
+          {/* GAMIFICAÇÃO */}
+          <XPBar xp={xp} />
+          <StreakCounter streak={streak} />
 
-      <View style={styles.stats}>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <FontAwesome name="circle-o" size={18} color="#387373" /> Ativas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text style={styles.statText}>{activeCount}</Text>
-          </CardContent>
-        </Card>
+          {/* FILTROS */}
+          <View style={styles.filters}>
+            <TouchableOpacity
+              style={[styles.filterBtn, filter === "all" && styles.active]}
+              onPress={() => setFilter("all")}
+            >
+              <Text style={styles.filterText}>Todas</Text>
+            </TouchableOpacity>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <FontAwesome name="check-circle" size={18} color="#387373" />{" "}
-              Concluídas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text style={styles.statText}>{completedCount}</Text>
-          </CardContent>
-        </Card>
-      </View>
+            <TouchableOpacity
+              style={[styles.filterBtn, filter === "active" && styles.active]}
+              onPress={() => setFilter("active")}
+            >
+              <Text style={styles.filterText}>Ativas</Text>
+            </TouchableOpacity>
 
-      <Card>
-        <CardContent>
-          <TaskInput onAddTask={addTask} />
-        </CardContent>
-      </Card>
+            <TouchableOpacity
+              style={[styles.filterBtn, filter === "completed" && styles.active]}
+              onPress={() => setFilter("completed")}
+            >
+              <Text style={styles.filterText}>Feitas</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity
+              style={[styles.filterBtn, filter === "today" && styles.active]}
+              onPress={() => setFilter("today")}
+            >
+              <Text style={styles.filterText}>Hoje</Text>
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.filters}>
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
+          {/* BOTÃO NOVA TAREFA */}
+          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+            <FontAwesome name="plus" size={20} color="#fff" />
+            <Text style={styles.addText}>Nova Tarefa</Text>
+          </TouchableOpacity>
 
-          <TabsList>
-            <TabsTrigger value="all">Todas</TabsTrigger>
-            <TabsTrigger value="active">Ativas</TabsTrigger>
-            <TabsTrigger value="completed">Concluídas</TabsTrigger>
-          </TabsList>
-        </Tabs>
+          {/* LISTA */}
+          {filteredTasks.length === 0 ? (
+            <Text style={styles.emptyText}>Nenhuma tarefa aqui</Text>
+          ) : (
+            filteredTasks.map((t) => (
+              <TaskItem
+                key={t.id}
+                task={t}
+                onToggle={() => toggleTask(t.id)}
+                onDelete={() => deleteTask(t.id)}
+              />
+            ))
+          )}
 
-        {completedCount > 0 && (
-          <Button title="Limpar concluídas" onPress={clearCompleted} />
-        )}
-      </View>
+        </ScrollView>
 
-
-      {filteredTasks.length === 0 ? (
-        <Card>
-          <CardContent>
-            <Text style={styles.emptyText}>
-              {filter === "all"
-                ? "Nenhuma tarefa ainda!"
-                : filter === "active"
-                ? "Nenhuma tarefa ativa"
-                : "Nenhuma tarefa concluída"}
-            </Text>
-          </CardContent>
-        </Card>
-      ) : (
-        filteredTasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
-          />
-        ))
-      )}
-    </ScrollView>
+        <TaskModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSave={addTask}
+        />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f6f6f6" },
-  header: { flexDirection: "row", alignItems: "center", gap: 10 },
+  safe: { flex: 1, backgroundColor: "#f6f6f6" },
+  container: { padding: 20 },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
   title: { fontSize: 26, color: "#387373", fontWeight: "bold" },
-  subtitle: { color: "#555", marginBottom: 15 },
-  stats: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
-  statText: { fontSize: 18, color: "#387373", textAlign: "center" },
-  filters: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
-  emptyText: { textAlign: "center", color: "#888", padding: 20 },
+
+  filters: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
+  filterBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: "#ddd",
+  },
+  active: {
+    backgroundColor: "#387373",
+  },
+  filterText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  addBtn: {
+    flexDirection: "row",
+    backgroundColor: "#387373",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+  addText: { color: "#fff", fontWeight: "600" },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#777",
+    marginTop: 20,
+    fontSize: 16,
+  },
 });
-*/}

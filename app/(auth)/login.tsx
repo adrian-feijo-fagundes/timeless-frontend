@@ -1,202 +1,150 @@
+import { useAppData } from "@/contexts/AppDataContext";
+import api from "@/services/api";
+import { LoginResponse } from "@/types/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
+  Alert,
+  Image,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 
-import { TaskModal } from "@/components/TaskModal";
-import { TaskItem } from "@/components/TaskItem";
-import { XPBar } from "@/components/gamification/XPBar";
-import { StreakCounter } from "@/components/gamification/StreakCounter";
-import { useGamification } from "@/components/gamification/useGamification";
+import AuthTextInput from "@/components/AuthTextInput";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
+import AuthButton from "@/components/AuthButton";
 
-export default function TasksScreen() {
-  const { xp, streak, addXP, registerStreak } = useGamification();
 
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
+export default function LoginScreen() {
+  const { setLogged } = useAppData();
 
-  const [filter, setFilter] = useState<"all"|"active"|"completed"|"today">("all");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const addTask = (task: any) => {
-    const newTask = {
-      id: Date.now().toString(),
-      title: task.title,
-      desc: task.desc || "",
-      isHabit: task.isHabit,
-      completed: false,
-      createdAt: new Date(),
-    };
+  const handleLogin = async () => {
+    setLoading(true);
 
-    setTasks([newTask, ...tasks]);
-    setModalVisible(false);
-  };
+    try {
+      const response = await api.post<LoginResponse>("/login", {
+        email,
+        password,
+      });
 
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
+      const { token, user } = response.data;
 
-        if (!t.completed) {
-          addXP(10);
-          registerStreak();
-        }
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
 
-        return { ...t, completed: !t.completed };
-      })
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  /** ===== Filtros ===== */
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "active") return !t.completed;
-    if (filter === "completed") return t.completed;
-    if (filter === "today") {
-      const d = new Date(t.createdAt);
-      d.setHours(0,0,0,0);
-      return d.getTime() === today.getTime();
+      setLogged(true);
+      router.replace("/(tabs)");
+    } catch (err) {
+      Alert.alert("Erro", "Credenciais inválidas");
     }
-    return true; // all
-  });
+
+    setLoading(false);
+  };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={styles.safe}>
-        <ScrollView style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <View style={styles.inner}>
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-          {/* HEADER */}
-          <View style={styles.header}>
-            <FontAwesome name="tasks" size={28} color="#387373" />
-            <Text style={styles.title}>Minhas Tarefas</Text>
+          <Text style={styles.title}>Bem-vindo</Text>
+          <Text style={styles.subtitle}>Faça login para continuar</Text>
+
+          {/* EMAIL */}
+          <AuthTextInput
+            placeholder="E-mail"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          {/* SENHA */}
+          <AuthPasswordInput
+            placeholder="Senha"
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          {/* BOTÃO COM AUTHBUTTON */}
+          <AuthButton
+            title="Entrar"
+            onPress={handleLogin}
+            loading={loading}
+            style={{ marginTop: 12 }}
+          />
+
+          {/* LINK PARA CADASTRAR */}
+          <View style={styles.rowSignup}>
+            <Text style={styles.text}>Não tem conta?</Text>
+
+            <Link href="/register">
+              <Text style={styles.signup}> Cadastre-se</Text>
+            </Link>
           </View>
-
-          {/* GAMIFICAÇÃO */}
-          <XPBar xp={xp} />
-          <StreakCounter streak={streak} />
-
-          {/* FILTROS */}
-          <View style={styles.filters}>
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "all" && styles.active]}
-              onPress={() => setFilter("all")}
-            >
-              <Text style={styles.filterText}>Todas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "active" && styles.active]}
-              onPress={() => setFilter("active")}
-            >
-              <Text style={styles.filterText}>Ativas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "completed" && styles.active]}
-              onPress={() => setFilter("completed")}
-            >
-              <Text style={styles.filterText}>Feitas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "today" && styles.active]}
-              onPress={() => setFilter("today")}
-            >
-              <Text style={styles.filterText}>Hoje</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* BOTÃO NOVA TAREFA */}
-          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-            <FontAwesome name="plus" size={20} color="#fff" />
-            <Text style={styles.addText}>Nova Tarefa</Text>
-          </TouchableOpacity>
-
-          {/* LISTA */}
-          {filteredTasks.length === 0 ? (
-            <Text style={styles.emptyText}>Nenhuma tarefa aqui</Text>
-          ) : (
-            filteredTasks.map((t) => (
-              <TaskItem
-                key={t.id}
-                task={t}
-                onToggle={() => toggleTask(t.id)}
-                onDelete={() => deleteTask(t.id)}
-              />
-            ))
-          )}
-
-        </ScrollView>
-
-        <TaskModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSave={addTask}
-        />
-      </SafeAreaView>
+        </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f6f6f6" },
-  container: { padding: 20 },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-  },
-  title: { fontSize: 26, color: "#387373", fontWeight: "bold" },
-
-  filters: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
-  filterBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: "#ddd",
-  },
-  active: {
+  container: {
+    flex: 1,
     backgroundColor: "#387373",
   },
-  filterText: {
-    color: "#fff",
-    fontWeight: "600",
+  inner: {
+    flex: 1,
+    padding: 24,
+    justifyContent: "center",
   },
-
-  addBtn: {
-    flexDirection: "row",
-    backgroundColor: "#387373",
-    padding: 14,
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginBottom: 16,
     borderRadius: 10,
-    alignItems: "center",
-    gap: 10,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#d9d9d9",
     marginBottom: 20,
   },
-  addText: { color: "#fff", fontWeight: "600" },
-
-  emptyText: {
-    textAlign: "center",
-    color: "#777",
-    marginTop: 20,
-    fontSize: 16,
+  rowSignup: {
+    marginTop: 18,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  text: {
+    color: "#fff",
+  },
+  signup: {
+    color: "#000",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
 });
