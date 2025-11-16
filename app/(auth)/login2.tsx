@@ -1,73 +1,107 @@
-{/*import { useAppData } from "@/contexts/AppDataContext";
+import { useAppData } from "@/contexts/AppDataContext";
+import api from "@/services/api";
+import { LoginResponse } from "@/types/Auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import AuthTextInput from "@/components/AuthTextInput";
-import PasswordInput from "@/components/PasswordInput";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
 import AuthButton from "@/components/AuthButton";
+
 
 export default function LoginScreen() {
   const { setLogged } = useAppData();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const response = await api.post<LoginResponse>("/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = response.data;
+
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+
       setLogged(true);
       router.replace("/(tabs)");
-    }, 1200);
+    } catch (err) {
+      Alert.alert("Erro", "Credenciais inválidas");
+    }
+
+    setLoading(false);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <View style={styles.inner}>
-        <Image
-          source={require("../../assets/images/icon.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <View style={styles.inner}>
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-        <Text style={styles.title}>Bem-vindo</Text>
-        <Text style={styles.subtitle}>Faça login para continuar</Text>
+          <Text style={styles.title}>Bem-vindo</Text>
+          <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-        <AuthTextInput
-          placeholder="E-mail"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+          {/* EMAIL */}
+          <AuthTextInput
+            placeholder="E-mail"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <PasswordInput value={password} onChangeText={setPassword} />
+          {/* SENHA */}
+          <AuthPasswordInput
+            placeholder="Senha"
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        <AuthButton
-          title="Entrar"
-          onPress={handleLogin}
-          loading={loading}
-        />
+          {/* BOTÃO COM AUTHBUTTON */}
+          <AuthButton
+            title="Entrar"
+            onPress={handleLogin}
+            loading={loading}
+            style={{ marginTop: 12 }}
+          />
 
-        <View style={styles.rowSignup}>
-          <Text style={styles.text}>Não tem conta?</Text>
-          <Link href="/register">
-            <Text style={styles.signup}> Cadastre-se</Text>
-          </Link>
+          {/* LINK PARA CADASTRAR */}
+          <View style={styles.rowSignup}>
+            <Text style={styles.text}>Não tem conta?</Text>
+
+            <Link href="/register">
+              <Text style={styles.signup}> Cadastre-se</Text>
+            </Link>
+          </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -82,35 +116,35 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logo: {
-    width: 64,
-    height: 64,
+    width: 80,
+    height: 80,
     alignSelf: "center",
     marginBottom: 16,
+    borderRadius: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: 6,
     color: "#fff",
+    marginBottom: 4,
   },
   subtitle: {
     textAlign: "center",
-    marginBottom: 18,
-    color: "#e0e0e0",
+    color: "#d9d9d9",
+    marginBottom: 20,
   },
   rowSignup: {
+    marginTop: 18,
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 18,
   },
   text: {
     color: "#fff",
-    
   },
   signup: {
-    color: "#ffffffff",
+    color: "#000",
     fontWeight: "bold",
+    textDecorationLine: "underline",
   },
 });
-*/}

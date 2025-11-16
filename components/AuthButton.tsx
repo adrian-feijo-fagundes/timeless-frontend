@@ -1,4 +1,3 @@
-// components/AuthButton.tsx
 import React from "react";
 import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle } from "react-native";
 
@@ -40,7 +39,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   btnPressed: {
-    opacity: 0.8, // leve efeito visual ao pressionar
+    opacity: 0.8,
     transform: [{ scale: 0.98 }],
   },
   btnDisabled: {

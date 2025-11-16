@@ -1,58 +1,44 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
-interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-}
-
-interface Props {
-  task: Task;
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
-}
-
-export function TaskItem({ task, onToggle, onDelete }: Props) {
+export function TaskItem({ task, onToggle, onDelete }: any) {
   return (
-    <View style={styles.item}>
-      <TouchableOpacity onPress={() => onToggle(task.id)}>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onToggle} style={styles.left}>
         <FontAwesome
-          name={task.completed ? "check-circle" : "circle-thin"}
-          size={24}
-          color="#387373"
+          name={task.completed ? "check-circle" : "circle-o"}
+          size={22}
+          color={task.completed ? "#387373" : "#888"}
         />
+        <Text
+          style={[
+            styles.text,
+            task.completed && { textDecorationLine: "line-through", color: "#888" },
+          ]}
+        >
+          {task.title}
+        </Text>
       </TouchableOpacity>
-      <Text
-        style={[
-          styles.text,
-          task.completed && { textDecorationLine: "line-through", color: "#999" },
-        ]}
-      >
-        {task.text}
-      </Text>
-      <TouchableOpacity onPress={() => onDelete(task.id)}>
-        <FontAwesome name="trash" size={22} color="#cc4444" />
+
+      <TouchableOpacity onPress={onDelete}>
+        <FontAwesome name="trash" size={20} color="#E74C3C" />
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  item: {
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 14,
     backgroundColor: "#fff",
     borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 12,
-    marginBottom: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
-  text: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: "#333",
-  },
+  left: { flexDirection: "row", alignItems: "center", gap: 10 },
+  text: { fontSize: 16 },
 });

@@ -1,0 +1,90 @@
+import React from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+interface Props {
+  title: string;
+  icon: keyof typeof FontAwesome.glyphMap;
+  route?: string;
+  onPress?: () => void;
+}
+
+export const handleLogout = async () => {
+  await AsyncStorage.removeItem("token");
+  await AsyncStorage.removeItem("user");
+  router.replace("/login");
+};
+
+export function UserOptionItem({ title, icon, route, onPress }: Props) {
+  const handlePress = () => {
+    if (onPress) return onPress();
+    if (route) return router.push(route);
+  };
+
+  return (
+    <Pressable 
+      onPress={handlePress}
+      style={({ pressed }) => [
+        styles.container,
+        pressed && styles.pressed
+      ]}
+    >
+      <View style={styles.left}>
+        <FontAwesome name={icon} size={20} color="#387373" style={styles.icon} />
+        <Text style={styles.title}>{title}</Text>
+      </View>
+
+      <FontAwesome name="chevron-right" size={18} color="#B0B0B0" />
+    </Pressable>
+  );
+}
+
+
+export default function ProfileOptions() {
+  return (
+    <View>
+      <UserOptionItem 
+        title="Informações Pessoais"
+        icon="user"
+        route="/PersonalInfo"
+      />
+
+      <UserOptionItem 
+        title="Logout"
+        icon="sign-out"
+        onPress={handleLogout}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderColor: "#E8E8E8",
+    minHeight: 60,
+  },
+  pressed: {
+    backgroundColor: "#38737320",
+  },
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  icon: {
+    marginRight: 13,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#2F2F2F",
+  },
+});

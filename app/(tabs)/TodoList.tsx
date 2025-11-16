@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+{/**import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
-import { TaskInput } from "@/components/TaskInput";
+
 import { TaskItem } from "@/components/TaskItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,7 +72,7 @@ export default function App() {
 
       <Text style={styles.subtitle}>Organize seu dia de forma simples!</Text>
 
-      {/* Estatísticas */}
+
       <View style={styles.stats}>
         <Card>
           <CardHeader>
@@ -98,14 +98,13 @@ export default function App() {
         </Card>
       </View>
 
-      {/* Adicionar tarefa */}
       <Card>
         <CardContent>
           <TaskInput onAddTask={addTask} />
         </CardContent>
       </Card>
 
-      {/* Filtros */}
+
       <View style={styles.filters}>
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
 
@@ -121,7 +120,7 @@ export default function App() {
         )}
       </View>
 
-      {/* Lista */}
+
       {filteredTasks.length === 0 ? (
         <Card>
           <CardContent>
@@ -158,3 +157,4 @@ const styles = StyleSheet.create({
   filters: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
   emptyText: { textAlign: "center", color: "#888", padding: 20 },
 });
+*/}

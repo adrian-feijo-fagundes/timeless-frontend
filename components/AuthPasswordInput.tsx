@@ -26,10 +26,9 @@ export default function AuthPasswordInput(props: TextInputProps) {
         style={styles.showBtn}
       >
         <FontAwesome5
-          // Define o ícone: 'eye' se não for seguro (mostrar texto), 'eye-slash' se for seguro (ocultar texto)
           name={secure ? "eye-slash" : "eye"}
-          size={20} // Tamanho do ícone
-          color="#ffffffff" // Cor do ícone
+          size={20}
+          color="#ffffffff" 
         />
       </TouchableOpacity>
     </View>

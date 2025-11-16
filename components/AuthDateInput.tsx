@@ -19,7 +19,6 @@ export default function AuthDateInput({ value, onChange }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* MOBILE */}
       {Platform.OS !== "web" && show && (
         <DateTimePicker
           value={value || new Date(2000, 0, 1)}
@@ -44,19 +43,6 @@ export default function AuthDateInput({ value, onChange }: Props) {
 
         <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
       </TouchableOpacity>
-
-      {/* WEB */}
-      {Platform.OS === "web" && (
-        <input
-          type="date"
-          value={value ? value.toISOString().substring(0, 10) : ""}
-          onChange={(e) => {
-            const newDate = new Date(e.target.value);
-            if (!isNaN(newDate.getTime())) onChange(newDate);
-          }}
-          style={styles.webInput}
-        />
-      )}
     </View>
   );
 }
@@ -79,13 +65,5 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#fff",
-  },
-  webInput: {
-    marginTop: 8,
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: "#4B9F9F",
-    color: "#fff",
-    width: "100%",
   },
 });

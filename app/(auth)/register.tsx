@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// COMPONENTES PADRONIZADOS
 import AuthTextInput from "@/components/AuthTextInput";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
 import AuthButton from "@/components/AuthButton";
