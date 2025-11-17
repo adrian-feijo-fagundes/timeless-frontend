@@ -6,14 +6,12 @@ import { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 
 function RootLayoutInner() {
-
   const colorScheme = useColorScheme();
   const { logged, setLogged } = useAppData();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [hasNavigated, setHasNavigated] = useState(false);
 
-  // Carrega o estado de autenticação apenas UMA VEZ
+  // Carrega o estado de autenticação apenas 1 vez
   useEffect(() => {
     async function init() {
       try {
@@ -27,27 +25,18 @@ function RootLayoutInner() {
     init();
   }, []);
 
-
-
+  // Navega sempre que "logged" mudar, após carregamento
   useEffect(() => {
     if (loading) return;
-  
-    // Navegação inicial
-    if (!hasNavigated) {
-      if (logged) router.replace("/(tabs)");
-      else router.replace("/(auth)/login");
-  
-      setHasNavigated(true);
-      return;
-    }
-  
-    // Logout ou mudança de login depois da inicialização
-    if (!logged) {
+
+    if (logged) {
+      router.replace("/(tabs)");
+    } else {
       router.replace("/(auth)/login");
     }
   }, [loading, logged]);
 
-  if (loading) return null; // tela inicial silenciosa
+  if (loading) return null;
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -59,8 +48,7 @@ function RootLayoutInner() {
   );
 }
 
-
-export default function RootLayout() { 
+export default function RootLayout() {
   return (
     <AppDataProvider>
       <RootLayoutInner />
