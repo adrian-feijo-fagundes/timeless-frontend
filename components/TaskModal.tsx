@@ -1,15 +1,15 @@
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  Keyboard,
   Modal,
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 
 export function TaskModal({ visible, onClose, onSave }: any) {
   const [title, setTitle] = useState("");
@@ -29,7 +29,7 @@ export function TaskModal({ visible, onClose, onSave }: any) {
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} >
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
             <View style={styles.box}>

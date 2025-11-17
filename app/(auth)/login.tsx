@@ -1,7 +1,4 @@
 import { useAppData } from "@/contexts/AppDataContext";
-import api from "@/services/api";
-import { LoginResponse } from "@/types/Auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -16,9 +13,10 @@ import {
   View,
 } from "react-native";
 
-import AuthTextInput from "@/components/AuthTextInput";
-import AuthPasswordInput from "@/components/AuthPasswordInput";
 import AuthButton from "@/components/AuthButton";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
+import AuthTextInput from "@/components/AuthTextInput";
+import { loginUser } from "@/services/authService";
 
 
 export default function LoginScreen() {
@@ -27,32 +25,30 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Preencha todos os campos!");
+      return;
+    }
+  
     setLoading(true);
-
+  
     try {
-      const response = await api.post<LoginResponse>("/login", {
-        email,
-        password,
-      });
-
-      const { token, user } = response.data;
-
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("user", JSON.stringify(user));
-
+      await loginUser(email, password);
       setLogged(true);
       router.replace("/(tabs)");
-    } catch (err) {
-      Alert.alert("Erro", "Credenciais inválidas");
+    } catch (err: any) {
+      setError(err.message);
+      Alert.alert("Erro", err.message);
     }
-
+  
     setLoading(false);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} disabled={Platform.OS === "web"}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -83,6 +79,8 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
+          
+          {error ? <Text style={styles.error}>{error}</Text> : null}
           {/* BOTÃO COM AUTHBUTTON */}
           <AuthButton
             title="Entrar"
@@ -146,5 +144,10 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
     textDecorationLine: "underline",
+  },
+  error: {
+    color: "#FFD1D1",
+    marginVertical: 10,
+    textAlign: "center",
   },
 });

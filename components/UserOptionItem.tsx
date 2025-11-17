@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface Props {
   title: string;

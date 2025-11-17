@@ -1,21 +1,20 @@
+import { TaskItem } from "@/components/TaskItem";
+import { TaskModal } from "@/components/TaskModal";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
+import { XPBar } from "@/components/gamification/XPBar";
+import { useGamification } from "@/components/gamification/useGamification";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
+  Keyboard,
   ScrollView,
-  View,
+  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard,
-  StyleSheet,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-
-import { TaskModal } from "@/components/TaskModal";
-import { TaskItem } from "@/components/TaskItem";
-import { XPBar } from "@/components/gamification/XPBar";
-import { StreakCounter } from "@/components/gamification/StreakCounter";
-import { useGamification } from "@/components/gamification/useGamification";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksScreen() {
   const { xp, streak, addXP, registerStreak } = useGamification();

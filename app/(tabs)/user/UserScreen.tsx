@@ -1,15 +1,15 @@
+import { ProfileHeader } from "@/components/ProfileHeader";
+import { UserOptionItem } from "@/components/UserOptionItem";
+import { useAppData } from "@/contexts/AppDataContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAppData } from "@/contexts/AppDataContext";
-import { UserOptionItem } from "@/components/UserOptionItem";
-import { ProfileHeader } from "@/components/ProfileHeader";
 
 export default function UserScreen() {
   const { setLogged } = useAppData();
@@ -44,7 +44,7 @@ export default function UserScreen() {
         <UserOptionItem
           title="Informações Pessoais"
           icon="user"
-          route="/profile/info"
+          route="/user/PersonalInfo"
         />
 
         <UserOptionItem

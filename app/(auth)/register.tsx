@@ -1,5 +1,3 @@
-import api from "@/services/api";
-import { LoginResponse, RegisterResponse } from "@/types/Auth";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -13,12 +11,12 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import AuthTextInput from "@/components/AuthTextInput";
-import AuthPasswordInput from "@/components/AuthPasswordInput";
 import AuthButton from "@/components/AuthButton";
 import AuthDateInput from "@/components/AuthDateInput";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
+import AuthTextInput from "@/components/AuthTextInput";
+import { loginUser, registerUser } from "@/services/authService";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
@@ -29,68 +27,59 @@ export default function RegisterScreen() {
 
   const [error, setError] = useState("");
 
-  const handleRegister = async () => {
-    if (!name || !email || !birthday || !password || !confirmPassword) {
-      setError("Preencha todos os campos!");
-      return;
-    }
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
-      setError("Email inválido");
-      return;
-    }
+const handleRegister = async () => {
+  if (!name || !email || !birthday || !password || !confirmPassword) {
+    setError("Preencha todos os campos!");
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      setError("As senhas não coincidem.");
-      return;
-    }
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    setError("Email inválido");
+    return;
+  }
 
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError("As senhas não coincidem.");
+    return;
+  }
 
-    setError("");
+  if (password.length < 6) {
+    setError("A senha deve ter pelo menos 6 caracteres.");
+    return;
+  }
 
-    try {
-      const response = await api.post<RegisterResponse>("/users", {
-        name,
-        email,
-        password,
-        birthday: birthday.toISOString().split("T")[0],
-      });
+  setError("");
 
-      if (response.status !== 201) {
-        setError("Email já está em uso");
-        return;
-      }
+  try {
+    await registerUser({
+      name,
+      email,
+      password,
+      birthday: birthday.toISOString().split("T")[0],
+    });
 
-      const loginResponse = await api.post<LoginResponse>("/login", {
-        email,
-        password,
-      });
+    // login automático após registrar
+    await loginUser(email, password);
 
-      const { token, user } = loginResponse.data;
+    router.replace("/(tabs)");
+  } catch (err: any) {
+    Alert.alert("Erro", err.message);
+    setError(err.message);
 
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("user", JSON.stringify(user));
+  }
+};
 
-      router.replace("/(tabs)");
-    } catch (error: any) {
-      Alert.alert(
-        "Erro",
-        error.response?.data?.message || "Falha ao registrar"
-      );
-    }
-  };
 
   return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback
+        onPress={Keyboard.dismiss}
+        disabled={Platform.OS === "web"}
+      >
         <View style={styles.container}>
           <ScrollView
             contentContainerStyle={styles.centerContent}

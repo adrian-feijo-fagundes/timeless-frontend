@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView 
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity
 } from "react-native";
 
 export default function PersonalInfo() {
@@ -14,6 +13,7 @@ export default function PersonalInfo() {
   const [email, setEmail] = useState("");
   const [birthDate, setBirthDate] = useState(""); 
   const [loading, setLoading] = useState(false);
+
 
   const handleSave = async () => {
     setLoading(true);

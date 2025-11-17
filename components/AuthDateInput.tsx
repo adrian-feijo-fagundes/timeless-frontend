@@ -1,13 +1,13 @@
+import { FontAwesome5 } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
-  View,
+  Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
+  View,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 type Props = {
   value: Date | null;
@@ -17,8 +17,17 @@ type Props = {
 export default function AuthDateInput({ value, onChange }: Props) {
   const [show, setShow] = useState(false);
 
+  const handleWebChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateString = e.target.value;
+    if (dateString) {
+      const date = new Date(dateString + "T00:00:00");
+      onChange(date);
+    }
+  };
+
   return (
     <View style={styles.container}>
+      {/* MOBILE: abre o picker nativo */}
       {Platform.OS !== "web" && show && (
         <DateTimePicker
           value={value || new Date(2000, 0, 1)}
@@ -31,18 +40,34 @@ export default function AuthDateInput({ value, onChange }: Props) {
         />
       )}
 
-      {/* CAMPO VISUAL */}
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShow(true)}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.text}>
-          {value ? value.toLocaleDateString("pt-BR") : "Data de nascimento"}
-        </Text>
+      <View style={{ position: "relative" }}>
+        {/* VISUAL DO CAMPO */}
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => Platform.OS !== "web" && setShow(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.text}>
+            {value ? value.toLocaleDateString("pt-BR") : "Data de nascimento"}
+          </Text>
 
-        <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
-      </TouchableOpacity>
+          <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
+        </TouchableOpacity>
+
+        {/* WEB: input invisível por cima mantendo estilo */}
+        {Platform.OS === "web" && (
+          <input
+            type="date"
+            style={styles.webInput as any}
+            onChange={handleWebChange}
+            value={
+              value
+                ? value.toISOString().split("T")[0] // yyyy-mm-dd
+                : ""
+            }
+          />
+        )}
+      </View>
     </View>
   );
 }
@@ -65,5 +90,16 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#fff",
+  },
+
+  // posição absoluta e transparente
+  webInput: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: "100%",
+    width: "100%",
+    opacity: 0,
+    cursor: "pointer",
   },
 });
