@@ -1,7 +1,9 @@
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { UserOptionItem } from "@/components/UserOptionItem";
 import { useAppData } from "@/contexts/AppDataContext";
+import { deleteAccount } from "@/services/authService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -17,18 +19,35 @@ export default function UserScreen() {
   const handleLogout = async () => {
     await AsyncStorage.clear();
     setLogged(false);
+    router.replace("/(auth)/login"); // <--- adiciona isso
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
+    const confirmDelete = async () => {
+      await deleteAccount();
+      await handleLogout();
+    };
+
+    if (Platform.OS === "web") {
+      const ok = window.confirm(
+        "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
+      );
+      if (ok) await confirmDelete();
+      return;
+    }
+
     Alert.alert(
       "Excluir conta",
       "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Excluir", style: "destructive", onPress: () => {} },
+        { text: "Excluir", style: "destructive", onPress: confirmDelete },
       ]
     );
   };
+
+
+  
 
   return (
     <KeyboardAvoidingView

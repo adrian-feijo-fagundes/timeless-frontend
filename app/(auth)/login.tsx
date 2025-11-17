@@ -1,5 +1,5 @@
 import { useAppData } from "@/contexts/AppDataContext";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 
+import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
 import AuthTextInput from "@/components/AuthTextInput";
@@ -90,13 +91,7 @@ export default function LoginScreen() {
           />
 
           {/* LINK PARA CADASTRAR */}
-          <View style={styles.rowSignup}>
-            <Text style={styles.text}>Não tem conta?</Text>
-
-            <Link href="/register">
-              <Text style={styles.signup}> Cadastre-se</Text>
-            </Link>
-          </View>
+          <AnswerLink href="/register" linkText="Cadastre-se" answer="Não tem conta?"/>
         </View>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
@@ -131,19 +126,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#d9d9d9",
     marginBottom: 20,
-  },
-  rowSignup: {
-    marginTop: 18,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  text: {
-    color: "#fff",
-  },
-  signup: {
-    color: "#000",
-    fontWeight: "bold",
-    textDecorationLine: "underline",
   },
   error: {
     color: "#FFD1D1",

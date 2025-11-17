@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
 import AuthDateInput from "@/components/AuthDateInput";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
@@ -122,6 +123,9 @@ const handleRegister = async () => {
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
             <AuthButton title="Registrar" onPress={handleRegister} />
+
+            <AnswerLink href="/login" linkText="Entrar" answer="Tem conta?"/>
+            
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>

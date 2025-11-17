@@ -51,3 +51,18 @@ export async function registerUser(data: {
             throw new Error(error.response?.data?.message || "Erro ao registrar");
     }
 }
+
+export async function deleteAccount() { 
+    try {
+
+        const response = await api.delete("/profile/delete");
+
+        if (response.status !== 204) {
+            throw new Error("Falha ao excluir conta");
+        }
+
+        return response.data;
+    } catch (error: any) {
+            throw new Error(error);
+    }
+}
