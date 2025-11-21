@@ -19,7 +19,7 @@ export default function UserScreen() {
   const handleLogout = async () => {
     await AsyncStorage.clear();
     setLogged(false);
-    router.replace("/(auth)/login"); // <--- adiciona isso
+    router.replace("/(auth)/login");
   };
 
   const handleDeleteAccount = async () => {

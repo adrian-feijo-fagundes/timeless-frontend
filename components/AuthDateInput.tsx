@@ -54,7 +54,6 @@ export default function AuthDateInput({ value, onChange }: Props) {
           <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
         </TouchableOpacity>
 
-        {/* WEB: input invisível por cima mantendo estilo */}
         {Platform.OS === "web" && (
           <input
             type="date"
@@ -92,7 +91,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  // posição absoluta e transparente
   webInput: {
     position: "absolute",
     top: 0,
