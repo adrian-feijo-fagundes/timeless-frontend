@@ -1,201 +1,126 @@
-import { TaskItem } from "@/components/TaskItem";
-import { TaskModal } from "@/components/TaskModal";
-import { StreakCounter } from "@/components/gamification/StreakCounter";
-import { XPBar } from "@/components/gamification/XPBar";
-import { useGamification } from "@/components/gamification/useGamification";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
-import {
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import api from "@/services/api";
+import { CompleteTaskButton } from "@/components/gamification/CompleteTaskButton";
+
+import { useGamification } from "@/contexts/GamificationContext";
 
 export default function TasksScreen() {
-  const { xp, streak, addXP, registerStreak } = useGamification();
-
   const [tasks, setTasks] = useState<any[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  const { fetchGamification } = useGamification();
 
-  const [filter, setFilter] = useState<"all"|"active"|"completed"|"today">("all");
-
-  const addTask = (task: any) => {
-    const newTask = {
-      id: Date.now().toString(),
-      title: task.title,
-      desc: task.desc || "",
-      isHabit: task.isHabit,
-      completed: false,
-      createdAt: new Date(),
-    };
-
-    setTasks([newTask, ...tasks]);
-    setModalVisible(false);
-  };
-
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-
-        if (!t.completed) {
-          addXP(10);
-          registerStreak();
-        }
-
-        return { ...t, completed: !t.completed };
-      })
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  /** ===== Filtros ===== */
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "active") return !t.completed;
-    if (filter === "completed") return t.completed;
-    if (filter === "today") {
-      const d = new Date(t.createdAt);
-      d.setHours(0,0,0,0);
-      return d.getTime() === today.getTime();
+  async function loadTasks() {
+    try {
+      const res = await api.get("/tasks");
+      setTasks(res.data);
+    } catch (err) {
+      console.log("Erro ao carregar tarefas", err);
     }
-    return true; // all
-  });
+  }
+
+  async function handleComplete(id: string) {
+    try {
+      await api.patch(`/tasks/${id}/complete`);
+      await fetchGamification(); // atualiza gamificação
+      loadTasks(); // atualiza lista
+    } catch (err) {
+      console.log("Erro ao completar tarefa");
+    }
+  }
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={styles.safe}>
-        <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Minhas Tarefas</Text>
 
-          {/* HEADER */}
-          <View style={styles.header}>
-            <FontAwesome name="tasks" size={28} color="#387373" />
-            <Text style={styles.title}>Minhas Tarefas</Text>
+        <Pressable style={styles.addButton}>
+          <FontAwesome name="plus" size={20} color="#fff" />
+        </Pressable>
+      </View>
+
+      {/* LISTA */}
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.taskTitle}>{item.title}</Text>
+              {item.description ? (
+                <Text style={styles.taskDesc}>{item.description}</Text>
+              ) : null}
+            </View>
+
+            {/* Botão concluir */}
+            {!item.completed && (
+              <CompleteTaskButton taskId={item.id} onCompleted={loadTasks} />
+            )}
+
+            {item.completed && (
+              <FontAwesome name="check-circle" size={26} color="#387373" />
+            )}
           </View>
-
-          {/* GAMIFICAÇÃO */}
-          <XPBar xp={xp} />
-          <StreakCounter streak={streak} />
-
-          {/* FILTROS */}
-          <View style={styles.filters}>
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "all" && styles.active]}
-              onPress={() => setFilter("all")}
-            >
-              <Text style={styles.filterText}>Todas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "active" && styles.active]}
-              onPress={() => setFilter("active")}
-            >
-              <Text style={styles.filterText}>Ativas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "completed" && styles.active]}
-              onPress={() => setFilter("completed")}
-            >
-              <Text style={styles.filterText}>Feitas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "today" && styles.active]}
-              onPress={() => setFilter("today")}
-            >
-              <Text style={styles.filterText}>Hoje</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* BOTÃO NOVA TAREFA */}
-          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-            <FontAwesome name="plus" size={20} color="#fff" />
-            <Text style={styles.addText}>Nova Tarefa</Text>
-          </TouchableOpacity>
-
-          {/* LISTA */}
-          {filteredTasks.length === 0 ? (
-            <Text style={styles.emptyText}>Nenhuma tarefa aqui</Text>
-          ) : (
-            filteredTasks.map((t) => (
-              <TaskItem
-                key={t.id}
-                task={t}
-                onToggle={() => toggleTask(t.id)}
-                onDelete={() => deleteTask(t.id)}
-              />
-            ))
-          )}
-
-        </ScrollView>
-
-        <TaskModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSave={addTask}
-        />
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f6f6f6" },
-  container: { padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#F4F7F7",
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
 
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
     marginBottom: 20,
   },
-  title: { fontSize: 26, color: "#387373", fontWeight: "bold" },
 
-  filters: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#387373",
   },
-  filterBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: "#ddd",
-  },
-  active: {
+
+  addButton: {
     backgroundColor: "#387373",
+    padding: 10,
+    borderRadius: 10,
   },
-  filterText: {
-    color: "#fff",
+
+  card: {
+    flexDirection: "row",
+    padding: 14,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8E8",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  taskTitle: {
+    fontSize: 16,
+    color: "#387373",
     fontWeight: "600",
   },
 
-  addBtn: {
-    flexDirection: "row",
-    backgroundColor: "#387373",
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-  },
-  addText: { color: "#fff", fontWeight: "600" },
-
-  emptyText: {
-    textAlign: "center",
-    color: "#777",
-    marginTop: 20,
-    fontSize: 16,
+  taskDesc: {
+    fontSize: 13,
+    color: "#4A4A4A",
+    marginTop: 4,
   },
 });

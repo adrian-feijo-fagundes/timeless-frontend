@@ -1,4 +1,5 @@
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
+import { GamificationProvider } from "@/contexts/GamificationContext";
 import { checkAuth } from "@/services/authService";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
@@ -11,7 +12,6 @@ function RootLayoutInner() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
-  // Carrega o estado de autenticação apenas 1 vez
   useEffect(() => {
     async function init() {
       try {
@@ -21,11 +21,9 @@ function RootLayoutInner() {
         setLoading(false);
       }
     }
-
     init();
   }, []);
 
-  // Navega sempre que "logged" mudar, após carregamento
   useEffect(() => {
     if (loading) return;
 
@@ -40,10 +38,12 @@ function RootLayoutInner() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-      </Stack>
+      <GamificationProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(auth)" />
+        </Stack>
+      </GamificationProvider>
     </ThemeProvider>
   );
 }
