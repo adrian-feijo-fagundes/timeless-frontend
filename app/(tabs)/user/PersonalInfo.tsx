@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import { getUserLocal, updateUser } from "@/services/user";
+import { parseBirthDate } from "@/utils/parseBirthDate";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,21 +11,54 @@ import {
 } from "react-native";
 
 export default function PersonalInfo() {
-  // estados locais → seu backend vai substituir pelos dados reais depois
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [birthDate, setBirthDate] = useState(""); 
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const user = await getUserLocal();
+        setName(user.name);
+        setEmail(user.email);
+        setBirthDate(new Date(user.birthday).toLocaleDateString().split("T")[0])
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    load()
+  }, []);
 
   const handleSave = async () => {
     setLoading(true);
-
-    // aqui seu amigo integra com axios:
-    // await api.put("/user/info", { name, email, birthDate })
-
+  
+    const parsedDate = parseBirthDate(birthDate);
+  
+    if (!parsedDate) {
+      setLoading(false);
+      alert("Data inválida. Use o formato DD/MM/AAAA.");
+      return;
+    }
+  
+    try {
+      await updateUser({
+        name,
+        email,
+        birthday: parsedDate.toISOString(),
+      });
+  
+      alert("Informações atualizadas com sucesso!");
+      router.replace("/(tabs)/user/UserScreen")
+    } catch (error) {
+      console.log(error);
+      alert("Erro ao atualizar.");
+    }
+  
     setLoading(false);
   };
+  
 
   return (
     <ScrollView 

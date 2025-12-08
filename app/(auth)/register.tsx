@@ -60,7 +60,6 @@ const handleRegister = async () => {
       birthday: birthday.toISOString().split("T")[0],
     });
 
-    // login automático após registrar
     await loginUser(email, password);
 
     router.replace("/(tabs)");

@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "./api";
 
 export async function getUserLocal() {
     try {
@@ -11,3 +12,22 @@ export async function getUserLocal() {
         return null;
     }
 }
+
+export async function updateUser(data: {
+    name?: string;
+    email?: string;
+    birthday?: string;
+}) {
+    try {
+        const response = await api.put("/users", data);
+
+        if (response.status !== 200) {
+            throw new Error("Falha ao atualizar dados");
+        }
+        await AsyncStorage.setItem("user", JSON.stringify(response.data));
+        return response.data;
+    } catch (error: any) {
+            throw new Error(error.response?.data?.message || "Erro ao Atualizar");
+    }
+}
+
