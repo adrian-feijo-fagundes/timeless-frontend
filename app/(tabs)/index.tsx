@@ -1,8 +1,5 @@
 import { TaskItem } from "@/components/TaskItem";
 import { TaskModal } from "@/components/TaskModal";
-import { StreakCounter } from "@/components/gamification/StreakCounter";
-import { XPBar } from "@/components/gamification/XPBar";
-import { useGamification } from "@/components/gamification/useGamification";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -17,7 +14,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksScreen() {
-  const { xp, streak, addXP, registerStreak } = useGamification();
 
   const [tasks, setTasks] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -43,10 +39,6 @@ export default function TasksScreen() {
       prev.map((t) => {
         if (t.id !== id) return t;
 
-        if (!t.completed) {
-          addXP(10);
-          registerStreak();
-        }
 
         return { ...t, completed: !t.completed };
       })
@@ -83,8 +75,6 @@ export default function TasksScreen() {
           </View>
 
           {/* GAMIFICAÇÃO */}
-          <XPBar xp={xp} />
-          <StreakCounter streak={streak} />
 
           {/* FILTROS */}
           <View style={styles.filters}>
