@@ -26,7 +26,7 @@ export default function AuthPasswordInput(props: TextInputProps) {
         style={styles.showBtn}
       >
         <FontAwesome5
-          name={secure ? "eye-slash" : "eye"}
+          name={secure ? "eye" : "eye-slash"}
           size={20}
           color="#ffffffff" 
         />

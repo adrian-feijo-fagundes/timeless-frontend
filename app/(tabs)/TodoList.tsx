@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import api from "@/services/api";
-import { CompleteTaskButton } from "@/components/gamification/CompleteTaskButton";
 
 import { useGamification } from "@/contexts/GamificationContext";
+import { CompleteTaskButton } from "../../components/gamification/CompleteTaskButton";
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<any[]>([]);

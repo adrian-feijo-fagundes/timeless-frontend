@@ -9,6 +9,7 @@ import {
   Platform,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -48,6 +49,7 @@ export default function LoginScreen() {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} disabled={Platform.OS === "web"}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -92,7 +94,7 @@ export default function LoginScreen() {
           <AnswerLink href="/register" linkText="Cadastre-se" answer="Não tem conta?"/>
         </View>
       </KeyboardAvoidingView>
-   
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -130,4 +132,4 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     textAlign: "center",
   },
-}); 
+});

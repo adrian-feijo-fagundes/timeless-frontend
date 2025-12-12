@@ -1,20 +1,21 @@
 import { TaskItem } from "@/components/TaskItem";
 import { TaskModal } from "@/components/TaskModal";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
+import { XPBar } from "@/components/gamification/XPBar";
+import { useGamification } from "@/contexts/GamificationContext";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TasksScreen() {
-
+  const {xp, streak} = useGamification();
   const [tasks, setTasks] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -64,7 +65,6 @@ export default function TasksScreen() {
   });
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.safe}>
         <ScrollView style={styles.container}>
 
@@ -75,6 +75,8 @@ export default function TasksScreen() {
           </View>
 
           {/* GAMIFICAÇÃO */}
+          <XPBar xp={xp} required={0} />
+          <StreakCounter streak={streak} />
 
           {/* FILTROS */}
           <View style={styles.filters}>
@@ -135,7 +137,6 @@ export default function TasksScreen() {
           onSave={addTask}
         />
       </SafeAreaView>
-    </TouchableWithoutFeedback>
   );
 }
 

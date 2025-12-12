@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -9,6 +9,7 @@ interface Props {
   icon: keyof typeof FontAwesome.glyphMap;
   route?: string;
   onPress?: () => void;
+
 }
 
 export const handleLogout = async () => {
@@ -20,7 +21,7 @@ export const handleLogout = async () => {
 export function UserOptionItem({ title, icon, route, onPress }: Props) {
   const handlePress = () => {
     if (onPress) return onPress();
-    if (route) return router.push(route);
+    if (route) return router.push(`/${route}` as RelativePathString);
   };
 
   return (
@@ -66,11 +67,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 15,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderColor: "#E8E8E8",
-    minHeight: 60,
+    borderColor: "rgba(216, 216, 216, 1)",
+    minHeight: 90,
   },
   pressed: {
     backgroundColor: "#38737320",
@@ -87,4 +88,5 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#2F2F2F",
   },
+  
 });
