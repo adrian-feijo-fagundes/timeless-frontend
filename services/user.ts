@@ -1,7 +1,6 @@
 import { executeWithErrorHandling } from "@/utils/executeWithErrorHandling";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "./api";
-import { storage } from "./storage";
 
 export async function getUserLocal() {
     return executeWithErrorHandling(async () => {
