@@ -24,7 +24,7 @@ export default function GroupCard({ group, onEdit, onDelete }: Props) {
         )}
 
         <Text style={{ color: "#ffffffff" }} variant="bodySmall">
-          Máx. tarefas/dia: {group.maxTasksPerDay}
+          Máx. tarefas/dia : {group.maxTasksPerDay}
         </Text>
       </View>
 
