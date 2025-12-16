@@ -1,82 +1,84 @@
+// screens/TasksScreen.tsx
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 
 import { useApi } from "@/hooks/useApi";
 import {
-  createGroup,
-  deleteGroup,
-  listGroups,
-  updateGroup,
-} from "@/services/groups";
+  createTask,
+  deleteTask,
+  listTasks,
+  updateTask,
+} from "@/services/taskService";
 
-import GroupCard from "@/components/GroupCard";
-import GroupFormModal from "@/components/GroupFormModal";
+import TaskCard from "@/components/TaskCard";
+import TaskFormModal from "@/components/TaskModal";
 import AuthButton from "@/components/AuthButton";
 
-export default function GroupsScreen() {
+export default function TasksScreen() {
   const { request, loading, error } = useApi();
-  const [groups, setGroups] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   useEffect(() => {
-    loadGroups();
+    loadTasks();
   }, []);
 
-  async function loadGroups() {
-    const res = await request(() => listGroups());
-    if (res) setGroups(res);
+  async function loadTasks() {
+    const res = await request(() => listTasks());
+    if (res) setTasks(res);
   }
 
   async function handleSave(data: any) {
-    const res = editingGroup
-      ? await request(() => updateGroup(editingGroup.id, data))
-      : await request(() => createGroup(data));
+    const res = editingTask
+      ? await request(() => updateTask(editingTask.id, data))
+      : await request(() => createTask(data));
 
     if (res) {
-      loadGroups();
+      loadTasks();
       setModalVisible(false);
+      setEditingTask(null);
     }
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Meus Grupos</Text>
+      <Text style={styles.title}>Minhas Tarefas</Text>
 
       {loading && <ActivityIndicator />}
       {error && <Text>{String(error)}</Text>}
 
       <FlatList
-        data={groups}
+        data={tasks}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <GroupCard
-            group={item}
+          <TaskCard
+            task={item}
             onEdit={() => {
-              setEditingGroup(item);
+              setEditingTask(item);
               setModalVisible(true);
             }}
             onDelete={() =>
-              request(() => deleteGroup(item.id)).then(loadGroups)
+              request(() => deleteTask(item.id)).then(loadTasks)
             }
           />
         )}
       />
 
       <AuthButton
-        title="Criar Grupo"
+        title="Criar Tarefa"
         onPress={() => {
-          setEditingGroup(null);
+          setEditingTask(null);
           setModalVisible(true);
         }}
         style={{ marginTop: 12, backgroundColor: "#387373" }}
-        labelStyle={{ color: '#ffffffff' }}
+        labelStyle={{ color: "#fff" }}
       />
 
-      <GroupFormModal
+      <TaskFormModal
         visible={modalVisible}
-        group={editingGroup}
+        task={editingTask}
         onClose={() => setModalVisible(false)}
         onSave={handleSave}
       />
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 26,

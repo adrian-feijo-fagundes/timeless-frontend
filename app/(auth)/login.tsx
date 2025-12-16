@@ -9,15 +9,17 @@ import {
   Platform,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
-import AuthTextInput from "@/components/AuthTextInput";
+import AuthTextInput from "@/components/AuthEmailInput";
 import { loginUser } from "@/services/authService";
-
+import { HelperText } from "react-native-paper";
+import AuthEmailInput from "@/components/AuthEmailInput";
 
 export default function LoginScreen() {
   const { setLogged } = useAppData();
@@ -32,9 +34,9 @@ export default function LoginScreen() {
       setError("Preencha todos os campos!");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       await loginUser(email, password);
       setLogged(true);
@@ -43,11 +45,16 @@ export default function LoginScreen() {
       setError(err.message);
       Alert.alert("Erro", err.message);
     }
-  
+
     setLoading(false);
   };
 
   return (
+    <TouchableWithoutFeedback
+      onPress={Keyboard.dismiss}
+      accessible={false}
+      disabled={Platform.OS === "web"}
+    >
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -62,25 +69,28 @@ export default function LoginScreen() {
           <Text style={styles.title}>Bem-vindo</Text>
           <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-          {/* EMAIL */}
-          <AuthTextInput
-            placeholder="E-mail"
+          <AuthEmailInput
+            label="E-mail"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
           />
 
-          {/* SENHA */}
           <AuthPasswordInput
-            placeholder="Senha"
             value={password}
             onChangeText={setPassword}
+            style={{ marginTop: 5 }}
           />
 
-          
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          {/* BOTÃO COM AUTHBUTTON */}
+          <HelperText
+            type="error"
+            visible={!!error}
+            style={{ color: "#000000ff", fontWeight: "bold" }}
+          >
+            {error}
+          </HelperText>
+
           <AuthButton
             title="Entrar"
             onPress={handleLogin}
@@ -88,11 +98,14 @@ export default function LoginScreen() {
             style={{ marginTop: 12 }}
           />
 
-          {/* LINK PARA CADASTRAR */}
-          <AnswerLink href="/register" linkText="Cadastre-se" answer="Não tem conta?"/>
+          <AnswerLink
+            href="/register"
+            linkText="Cadastre-se"
+            answer="Não tem conta?"
+          />
         </View>
       </KeyboardAvoidingView>
-   
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -125,9 +138,4 @@ const styles = StyleSheet.create({
     color: "#d9d9d9",
     marginBottom: 20,
   },
-  error: {
-    color: "#FFD1D1",
-    marginVertical: 10,
-    textAlign: "center",
-  },
-}); 
+});

@@ -1,69 +1,47 @@
-// components/TaskFormModal.tsx
 import React, { useEffect, useState } from "react";
 import { Modal, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 
+import WeekDaysSelector from "./WeekDaysSelector";
 import AuthTextInput from "@/components/AuthTextInput";
 import AuthButton from "@/components/AuthButton";
-import GroupSelector from "@/components/GroupSelector";
-import { useApi } from "@/hooks/useApi";
-import { listGroups } from "@/services/groups";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   onSave: (data: any) => void;
-  task?: any;
+  group?: any;
 };
 
-export default function TaskFormModal({
+export default function GroupFormModal({
   visible,
   onClose,
   onSave,
-  task,
+  group,
 }: Props) {
-  const { request } = useApi();
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [limitDate, setLimitDate] = useState("");
-  const [groupId, setGroupId] = useState<number | null>(null);
-  const [groups, setGroups] = useState<any[]>([]);
+  const [days, setDays] = useState<number[]>([]);
+  const [maxTasksPerDay, setMaxTasksPerDay] = useState(1);
 
-  /* ---------------- CARREGAR GRUPOS ---------------- */
   useEffect(() => {
-    async function loadGroups() {
-      const res = await request(() => listGroups());
-      if (res) setGroups(res);
-    }
-
-    loadGroups();
-  }, [request]);
-
-  /* ---------------- EDIT / CREATE ---------------- */
-  useEffect(() => {
-    if (task) {
-      setTitle(task.title);
-      setDescription(task.description ?? "");
-      setLimitDate(task.limitDate ?? "");
-      setGroupId(task.group?.id ?? null);
+    if (group) {
+      setTitle(group.title);
+      setDescription(group.description ?? "");
+      setDays(group.days ?? []);
+      setMaxTasksPerDay(group.maxTasksPerDay ?? 1);
     } else {
       setTitle("");
       setDescription("");
-      setLimitDate("");
-      setGroupId(null);
+      setDays([0, 1, 2, 3, 4, 5, 6]);
+      setMaxTasksPerDay(2);
     }
-  }, [task]);
+  }, [group]);
 
   function handleSave() {
     if (!title.trim()) return;
 
-    onSave({
-      title,
-      description,
-      limitDate,
-      groupId,
-    });
+    onSave({ title, description, days, maxTasksPerDay });
   }
 
   return (
@@ -71,32 +49,31 @@ export default function TaskFormModal({
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>
-            {task ? "Editar Tarefa" : "Nova Tarefa"}
+            {group ? "Editar Grupo" : "Novo Grupo"}
           </Text>
 
           <AuthTextInput
-            label="Título"
+            label="Nome do grupo"
             value={title}
             onChangeText={setTitle}
+           
           />
 
           <AuthTextInput
             label="Descrição"
             value={description}
             onChangeText={setDescription}
+           
           />
+
+          <WeekDaysSelector value={days} onChange={setDays} />
 
           <AuthTextInput
-            label="Data limite"
-            value={limitDate}
-            onChangeText={setLimitDate}
-          />
+            label="Máx. tarefas por dia"
+            keyboardType="numeric"
+            value={String(maxTasksPerDay)}
+            onChangeText={(v) => setMaxTasksPerDay(Number(v) || 0)}
 
-          {/* SELECTOR DE GRUPO */}
-          <GroupSelector
-            groups={groups}
-            value={groupId}
-            onChange={setGroupId}
           />
 
           <View style={styles.buttons}>
@@ -124,7 +101,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#fff",
+    color: "#387373",
     marginBottom: 12,
   },
   buttons: {

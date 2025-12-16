@@ -18,8 +18,7 @@ export default function UserLayout() {
             name="PersonalInfo"
             options={{
             title: "Informações Pessoais",
-            presentation: "card",
-            headerShown: true    
+            presentation: "card",    
             }}
         />
         </Stack>

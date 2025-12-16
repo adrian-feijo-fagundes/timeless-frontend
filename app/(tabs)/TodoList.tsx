@@ -1,126 +1,180 @@
+import { useApi } from "@/hooks/useApi";
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  TaskResponse,
+  updateTask,
+} from "@/services/taskService";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import api from "@/services/api";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { useGamification } from "@/contexts/GamificationContext";
-import { CompleteTaskButton } from "../../components/gamification/CompleteTaskButton";
+
 
 export default function TasksScreen() {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const { fetchGamification } = useGamification();
+  const { request, loading, error } = useApi();
+  const [tasks, setTasks] = useState<TaskResponse[]>([]);
 
-  async function loadTasks() {
-    try {
-      const res = await api.get("/tasks");
-      setTasks(res.data);
-    } catch (err) {
-      console.log("Erro ao carregar tarefas", err);
-    }
-  }
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
-  async function handleComplete(id: string) {
-    try {
-      await api.patch(`/tasks/${id}/complete`);
-      await fetchGamification(); // atualiza gamificação
-      loadTasks(); // atualiza lista
-    } catch (err) {
-      console.log("Erro ao completar tarefa");
-    }
-  }
-
+  /* -------------------------------------------------------------
+            CARREGAR TASKS AO INICIAR
+        ------------------------------------------------------------- */
   useEffect(() => {
     loadTasks();
   }, []);
 
+  async function loadTasks() {
+    const res = await request(() => listTasks());
+    if (res) setTasks(res as TaskResponse[]);
+  }
+
+  /* -------------------------------------------------------------
+            ABRIR MODAL PARA CRIAR OU EDITAR
+        ------------------------------------------------------------- */
+  function openModal(task?: any) {
+    setEditingTask(task || null);
+    setModalVisible(true);
+  }
+
+  /* -------------------------------------------------------------
+            SALVAR TASK
+        ------------------------------------------------------------- */
+  async function handleSave(data: any) {
+    let res;
+
+    if (editingTask) {
+      res = await request(() => updateTask(editingTask.id, data));
+    } else {
+      res = await request(() => createTask(data));
+    }
+
+    if (res) {
+      setModalVisible(false);
+      setEditingTask(null);
+      loadTasks();
+    }
+  }
+
+  /* -------------------------------------------------------------
+            DELETAR
+        ------------------------------------------------------------- */
+  async function handleDelete(id: number) {
+    const res = await request(() => deleteTask(id));
+    if (res) loadTasks();
+  }
+
+  /* -------------------------------------------------------------
+            UI PRINCIPAL
+        ------------------------------------------------------------- */
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Minhas Tarefas</Text>
+      <Text style={styles.title}>Minhas Tarefas</Text>
 
-        <Pressable style={styles.addButton}>
-          <FontAwesome name="plus" size={20} color="#fff" />
-        </Pressable>
-      </View>
+      {loading && <ActivityIndicator size="large" />}
+      {error && <Text style={styles.error}>{String(error)}</Text>}
 
-      {/* LISTA */}
       <FlatList
         data={tasks}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View style={styles.item}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.taskTitle}>{item.title}</Text>
+              <Text style={styles.itemTitle}>{item.title}</Text>
+
+              {item.topic ? (
+                <Text style={styles.itemText}>Tópico: {item.topic}</Text>
+              ) : null}
+
               {item.description ? (
-                <Text style={styles.taskDesc}>{item.description}</Text>
+                <Text style={styles.itemDesc}>{item.description}</Text>
+              ) : null}
+
+              {item.limitDate ? (
+                <Text style={styles.itemText}>
+                  Data limite: {item.limitDate}
+                </Text>
+              ) : null}
+
+              {item.group?.name ? (
+                <Text style={styles.itemText}>Grupo: {item.group.name}</Text>
               ) : null}
             </View>
 
-            {/* Botão concluir */}
-            {!item.completed && (
-              <CompleteTaskButton taskId={item.id} onCompleted={loadTasks} />
-            )}
+            <View style={styles.buttons}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => openModal(item)}
+              >
+                <Text style={styles.editText}>Editar</Text>
+              </TouchableOpacity>
 
-            {item.completed && (
-              <FontAwesome name="check-circle" size={26} color="#387373" />
-            )}
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Text style={styles.deleteText}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
+
+      <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
+        <Text style={styles.addButtonText}>+ Criar Tarefa</Text>
+      </TouchableOpacity>
+
+      {/* TaskModal REAL */}
+
     </View>
   );
 }
 
+/* -------------------------------------------------------------
+        STYLES
+    ------------------------------------------------------------- */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F4F7F7",
-    paddingHorizontal: 16,
-    paddingTop: 20,
-  },
+  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
+  error: { color: "red", marginBottom: 10 },
 
-  header: {
+  item: {
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
   },
 
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#387373",
-  },
+  itemTitle: { fontSize: 18, fontWeight: "bold" },
+  itemDesc: { color: "#777", marginTop: 3 },
+  itemText: { fontSize: 13, color: "#444", marginTop: 2 },
+
+  buttons: { flexDirection: "row", gap: 10 },
+
+  editButton: { backgroundColor: "#4caf50", padding: 8, borderRadius: 6 },
+  editText: { color: "white" },
+
+  deleteButton: { backgroundColor: "#e53935", padding: 8, borderRadius: 6 },
+  deleteText: { color: "white" },
 
   addButton: {
-    backgroundColor: "#387373",
-    padding: 10,
+    backgroundColor: "#2196f3",
+    padding: 15,
     borderRadius: 10,
-  },
-
-  card: {
-    flexDirection: "row",
-    padding: 14,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8E8",
     alignItems: "center",
-    gap: 12,
+    marginTop: 20,
   },
 
-  taskTitle: {
-    fontSize: 16,
-    color: "#387373",
-    fontWeight: "600",
-  },
-
-  taskDesc: {
-    fontSize: 13,
-    color: "#4A4A4A",
-    marginTop: 4,
-  },
+  addButtonText: { color: "white", fontSize: 18 },
 });
