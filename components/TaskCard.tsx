@@ -50,6 +50,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 10,
+
+        // 🔹 iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+
+    // 🔹 Android
+    elevation: 4,
   },
   title: {
     color: "#fff",

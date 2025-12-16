@@ -10,8 +10,9 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
+import { Surface } from "react-native-paper";
 
 export default function UserScreen() {
   const { setLogged } = useAppData();
@@ -29,10 +30,13 @@ export default function UserScreen() {
     };
 
     if (Platform.OS === "web") {
-      const ok = window.confirm(
-        "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
-      );
-      if (ok) await confirmDelete();
+      if (
+        window.confirm(
+          "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
+        )
+      ) {
+        await confirmDelete();
+      }
       return;
     }
 
@@ -46,45 +50,34 @@ export default function UserScreen() {
     );
   };
 
-
-  
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <ProfileHeader />
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <Surface style={styles.container}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+          <ProfileHeader />
 
-        <UserOptionItem
-          title="Informações Pessoais"
-          icon="user"
-          route="user/PersonalInfo"
-        />
-
-        <UserOptionItem
-          title="Segurança"
-          icon="lock"
-          route="user/Security"
-        />
-
-        <View style={{ marginTop: 30 }}>
           <UserOptionItem
-            title="Sair"
-            icon="sign-out"
-            onPress={handleLogout}
+            title="Informações Pessoais"
+            icon="user"
+            route="user/PersonalInfo"
           />
+
           <UserOptionItem
-            title="Excluir Conta"
-            icon="trash"
-            onPress={handleDeleteAccount}
+            title="Segurança"
+            icon="lock"
+            route="user/Security"
           />
-        </View>
-      </ScrollView>
+
+          <View style={{ marginTop: 30 }}>
+            <UserOptionItem title="Sair" icon="sign-out" onPress={handleLogout} />
+            <UserOptionItem
+              title="Excluir Conta"
+              icon="trash"
+              onPress={handleDeleteAccount}
+            />
+          </View>
+        </ScrollView>
+      </Surface>
     </KeyboardAvoidingView>
   );
 }
@@ -92,6 +85,6 @@ export default function UserScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#FFF",
   },
 });

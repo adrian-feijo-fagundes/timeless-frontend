@@ -2,7 +2,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RelativePathString, router } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Text, TouchableRipple } from "react-native-paper";
 
 interface Props {
   title: string;
@@ -22,47 +23,29 @@ export function UserOptionItem({ title, icon, route, onPress }: Props) {
     if (onPress) return onPress();
     if (route) {
       const normalized = route.startsWith("/") ? route : `/${route}`;
-      return router.push(normalized as RelativePathString);
+      router.push(normalized as RelativePathString);
     }
   };
 
   return (
-    <Pressable
+    <TouchableRipple
       onPress={handlePress}
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      rippleColor="#38737320"
     >
-      <View style={styles.left}>
-        <FontAwesome
-          name={icon}
-          size={20}
-          color="#387373"
-          style={styles.icon}
-        />
-        <Text style={styles.title}>{title}</Text>
+      <View style={styles.container}>
+        <View style={styles.left}>
+          <FontAwesome
+            name={icon}
+            size={20}
+            color="#387373"
+            style={styles.icon}
+          />
+          <Text style={styles.title}>{title}</Text>
+        </View>
+
+        <FontAwesome name="chevron-right" size={18} color="#B0B0B0" />
       </View>
-
-      <FontAwesome name="chevron-right" size={18} color="#B0B0B0" />
-    </Pressable>
-  );
-}
-
-export default function ProfileOptions() {
-  return (
-    <View>
-      <UserOptionItem
-        title="Informações Pessoais"
-        icon="user"
-        route="user/PersonalInfo"
-      />
-
-      <UserOptionItem
-        title="Segurança"
-        icon="lock"
-        route="user/Security"
-      />
-
-      <UserOptionItem title="Logout" icon="sign-out" onPress={handleLogout} />
-    </View>
+    </TouchableRipple>
   );
 }
 
@@ -77,9 +60,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#d8d8d8ff",
     minHeight: 90,
-  },
-  pressed: {
-    backgroundColor: "#38737320",
   },
   left: {
     flexDirection: "row",

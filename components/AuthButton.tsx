@@ -38,6 +38,15 @@ const styles = StyleSheet.create({
     marginTop: 6,
     backgroundColor: "#ffffff",
     borderRadius: 4,
+
+        // 🔹 iOS
+    shadowColor: "#000000ff",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+
+    // 🔹 Android
+    elevation: 4,
   },
   label: {
     color: "#387373",

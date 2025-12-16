@@ -45,8 +45,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#387373ff",
     borderRadius: 8,
     marginBottom: 10,
+
+    // 🔹 iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+
+    // 🔹 Android
+    elevation: 4,
   },
   actions: {
     flexDirection: "row",
   },
 });
+
