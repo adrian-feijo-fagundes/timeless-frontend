@@ -1,4 +1,5 @@
 import { GroupResponse, listGroups } from "@/services/groups";
+import { formatDateBR } from "@/utils/formatDate";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import {
@@ -10,18 +11,24 @@ import {
   TextInput,
 } from "react-native-paper";
 
-type Group = {
+type Task = {
   id: number;
-  name: string;
+  title: string;
+  topic?: string | null;
+  limitDate?: string | null;
+  groupId?: number | null;
 };
 
-const MOCK_GROUPS: Group[] = [
-  { id: 1, name: "Estudos" },
-  { id: 2, name: "Trabalho" },
-  { id: 3, name: "Pessoal" },
-];
+interface TaskModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (data: any) => void;
+  task?: Task; // 👈 se existir → edição
+}
 
-export function TaskModal({ visible, onClose, onSave }: any) {
+export function TaskModal({ visible, onClose, onSave, task }: TaskModalProps) {
+  const isEdit = !!task;
+
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [limitDate, setLimitDate] = useState("");
@@ -33,20 +40,31 @@ export function TaskModal({ visible, onClose, onSave }: any) {
   useEffect(() => {
     if (!visible) return;
 
-    async function loadGroups() {
-      setLoading(true);
-      try {
-        const data = await listGroups();
-        setGroups(data);
-      } catch (error) {
-        console.error("Erro ao buscar grupos", error);
-      } finally {
-        setLoading(false);
-      }
+    // 👉 Preenche campos se for edição
+    if (task) {
+      setTitle(task.title);
+      setTopic(task.topic ?? "");
+      setLimitDate(task.limitDate ? formatDateBR(task.limitDate) : "");
+      setGroupId(task.groupId ?? null);
+    } else {
+      resetFields();
     }
 
     loadGroups();
-  }, [visible]);
+  }, [visible, task]);
+
+  async function loadGroups() {
+    setLoading(true);
+    try {
+      const data = await listGroups();
+      setGroups(data);
+    } catch (error) {
+      console.error("Erro ao buscar grupos", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const formatDate = (text: string) => {
     const numbersOnly = text.replace(/\D/g, "");
 
@@ -60,6 +78,13 @@ export function TaskModal({ visible, onClose, onSave }: any) {
     )}/${numbersOnly.slice(4, 8)}`;
   };
 
+  function resetFields() {
+    setTitle("");
+    setTopic("");
+    setLimitDate("");
+    setGroupId(null);
+  }
+
   const save = () => {
     if (!title.trim()) return;
 
@@ -70,17 +95,13 @@ export function TaskModal({ visible, onClose, onSave }: any) {
       groupId,
     });
 
-    setTitle("");
-    setTopic("");
-    setLimitDate("");
-    setGroupId(null);
     onClose();
   };
 
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onClose}>
-        <Dialog.Title>Nova Tarefa</Dialog.Title>
+        <Dialog.Title>{isEdit ? "Editar Tarefa" : "Nova Tarefa"}</Dialog.Title>
 
         <Dialog.Content>
           <TextInput
@@ -132,7 +153,7 @@ export function TaskModal({ visible, onClose, onSave }: any) {
         <Dialog.Actions>
           <Button onPress={onClose}>Cancelar</Button>
           <Button mode="contained" onPress={save}>
-            Salvar
+            {isEdit ? "Atualizar" : "Salvar"}
           </Button>
         </Dialog.Actions>
       </Dialog>

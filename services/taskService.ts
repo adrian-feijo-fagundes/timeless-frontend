@@ -42,7 +42,7 @@ export interface TaskResponse {
     // Antes era apenas groupId, agora incluímos o objeto completo
     group?: {
         id: number;
-        name: string;
+        title: string;
         description?: string | null;
         color?: string | null;
         createdAt?: Date;

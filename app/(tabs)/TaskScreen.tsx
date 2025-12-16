@@ -1,5 +1,6 @@
 import { useApi } from "@/hooks/useApi";
 import {
+  //  completeTask,
   createTask,
   deleteTask,
   listTasks,
@@ -16,6 +17,7 @@ import {
   View,
 } from "react-native";
 
+import { formatDateBR } from "@/utils/formatDate";
 import { TaskModal } from "../TaskModal";
 
 export default function TasksScreen() {
@@ -23,11 +25,11 @@ export default function TasksScreen() {
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingTask, setEditingTask] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
 
   /* -------------------------------------------------------------
-            CARREGAR TASKS AO INICIAR
-        ------------------------------------------------------------- */
+      CARREGAR TASKS
+  ------------------------------------------------------------- */
   useEffect(() => {
     loadTasks();
   }, []);
@@ -38,21 +40,26 @@ export default function TasksScreen() {
   }
 
   /* -------------------------------------------------------------
-            ABRIR MODAL PARA CRIAR OU EDITAR
-        ------------------------------------------------------------- */
-  function openModal(task?: any) {
-    setEditingTask(task || null);
+      ABRIR MODAL
+  ------------------------------------------------------------- */
+  function openCreateModal() {
+    setEditingTask(null);
+    setModalVisible(true);
+  }
+
+  function openEditModal(task: TaskResponse) {
+    setEditingTask(task);
     setModalVisible(true);
   }
 
   /* -------------------------------------------------------------
-            SALVAR TASK
-        ------------------------------------------------------------- */
+      SALVAR (CREATE / UPDATE)
+  ------------------------------------------------------------- */
   async function handleSave(data: any) {
     let res;
 
     if (editingTask) {
-      res = await request(() => updateTask(editingTask.id, data));
+      res = await request(() => updateTask(editingTask.id!, data));
     } else {
       res = await request(() => createTask(data));
     }
@@ -65,16 +72,24 @@ export default function TasksScreen() {
   }
 
   /* -------------------------------------------------------------
-            DELETAR
-        ------------------------------------------------------------- */
+      COMPLETAR TASK
+  ------------------------------------------------------------- */
+  async function handleComplete(id: number) {
+    //const res = await request(() => completeTask(id));
+    //if (res) loadTasks();
+  }
+
+  /* -------------------------------------------------------------
+      DELETAR
+  ------------------------------------------------------------- */
   async function handleDelete(id: number) {
     const res = await request(() => deleteTask(id));
     if (res) loadTasks();
   }
 
   /* -------------------------------------------------------------
-            UI PRINCIPAL
-        ------------------------------------------------------------- */
+      UI
+  ------------------------------------------------------------- */
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Minhas Tarefas</Text>
@@ -84,42 +99,50 @@ export default function TasksScreen() {
 
       <FlatList
         data={tasks}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id!.toString()}
         renderItem={({ item }) => (
           <View style={styles.item}>
             <View style={{ flex: 1 }}>
               <Text style={styles.itemTitle}>{item.title}</Text>
 
-              {item.topic ? (
+              {item.topic && (
                 <Text style={styles.itemText}>Tópico: {item.topic}</Text>
-              ) : null}
+              )}
 
-              {item.description ? (
-                <Text style={styles.itemDesc}>{item.description}</Text>
-              ) : null}
-
-              {item.limitDate ? (
+              {item.limitDate && (
                 <Text style={styles.itemText}>
-                  Data limite: {item.limitDate}
+                  Data limite: {formatDateBR(item.limitDate)}
                 </Text>
-              ) : null}
+              )}
 
-              {item.group?.name ? (
-                <Text style={styles.itemText}>Grupo: {item.group.name}</Text>
-              ) : null}
+              {item.group?.title && (
+                <Text style={styles.itemText}>Grupo: {item.group.title}</Text>
+              )}
             </View>
 
             <View style={styles.buttons}>
+              {/* COMPLETAR */}
+              {!item.completedAt && (
+                <TouchableOpacity
+                  style={styles.completeButton}
+                  onPress={() => handleComplete(item.id!)}
+                >
+                  <Text style={styles.completeText}>✓</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* EDITAR */}
               <TouchableOpacity
                 style={styles.editButton}
-                onPress={() => openModal(item)}
+                onPress={() => openEditModal(item)}
               >
                 <Text style={styles.editText}>Editar</Text>
               </TouchableOpacity>
 
+              {/* EXCLUIR */}
               <TouchableOpacity
                 style={styles.deleteButton}
-                onPress={() => handleDelete(item.id)}
+                onPress={() => handleDelete(item.id!)}
               >
                 <Text style={styles.deleteText}>Excluir</Text>
               </TouchableOpacity>
@@ -128,18 +151,18 @@ export default function TasksScreen() {
         )}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
+      <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>
         <Text style={styles.addButtonText}>+ Criar Tarefa</Text>
       </TouchableOpacity>
 
-      {/* TaskModal REAL */}
+      {/* MODAL */}
       <TaskModal
         visible={modalVisible}
-        onDismiss={() => {
+        task={editingTask ?? undefined} // 👈 agora funciona
+        onClose={() => {
           setModalVisible(false);
           setEditingTask(null);
         }}
-        onClose={() => setModalVisible(false)}
         onSave={handleSave}
       />
     </View>
@@ -185,4 +208,17 @@ const styles = StyleSheet.create({
   },
 
   addButtonText: { color: "white", fontSize: 18 },
+
+  completeButton: {
+    backgroundColor: "#2ecc71",
+    padding: 8,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  completeText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
