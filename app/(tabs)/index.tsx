@@ -1,5 +1,5 @@
 import { TaskItem } from "@/components/TaskItem";
-import { TaskModal } from "@/components/TaskModal";
+
 import { StreakCounter } from "@/components/gamification/StreakCounter";
 import { XPBar } from "@/components/gamification/XPBar";
 import { useGamification } from "@/contexts/GamificationContext";
@@ -131,11 +131,7 @@ export default function TasksScreen() {
 
         </ScrollView>
 
-        <TaskModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSave={addTask}
-        />
+
       </SafeAreaView>
   );
 }

@@ -16,8 +16,10 @@ import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
 import AuthDateInput from "@/components/AuthDateInput";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
+import AuthEmailInput from "@/components/AuthEmailInput";
 import AuthTextInput from "@/components/AuthTextInput";
 import { loginUser, registerUser } from "@/services/authService";
+import { HelperText } from "react-native-paper";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
@@ -28,52 +30,49 @@ export default function RegisterScreen() {
 
   const [error, setError] = useState("");
 
+  const handleRegister = async () => {
+    if (!name || !email || !birthday || !password || !confirmPassword) {
+      setError("Preencha todos os campos!");
+      return;
+    }
 
-const handleRegister = async () => {
-  if (!name || !email || !birthday || !password || !confirmPassword) {
-    setError("Preencha todos os campos!");
-    return;
-  }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Email inválido");
+      return;
+    }
 
-  if (!/^\S+@\S+\.\S+$/.test(email)) {
-    setError("Email inválido");
-    return;
-  }
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    setError("As senhas não coincidem.");
-    return;
-  }
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
 
-  if (password.length < 6) {
-    setError("A senha deve ter pelo menos 6 caracteres.");
-    return;
-  }
+    setError("");
 
-  setError("");
+    try {
+      await registerUser({
+        name,
+        email,
+        password,
+        birthday: birthday.toISOString().split("T")[0],
+      });
 
-  try {
-    await registerUser({
-      name,
-      email,
-      password,
-      birthday: birthday.toISOString().split("T")[0],
-    });
+      await loginUser(email, password);
 
-    await loginUser(email, password);
-
-    router.replace("/(tabs)");
-  } catch (err: any) {
-    Alert.alert("Erro", err.message);
-    setError(err.message);
-
-  }
-};
-
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      Alert.alert("Erro", err.message);
+      setError(err.message);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <TouchableWithoutFeedback
@@ -88,43 +87,34 @@ const handleRegister = async () => {
           >
             <Text style={styles.title}>Crie sua conta</Text>
 
-            <AuthTextInput
-              placeholder="Nome completo"
-              value={name}
-              onChangeText={setName}
-            />
+            <AuthTextInput value={name} onChangeText={setName} label="Nome" />
 
-            <AuthTextInput
-              placeholder="E-mail"
-              value={email}
-              onChangeText={setEmail}
+            <AuthEmailInput
+              label="E-mail"
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
 
-            <AuthDateInput
-              value={birthday}
-              onChange={setBirthday}
-            />
+            <AuthDateInput value={birthday} onChange={setBirthday} />
 
-            <AuthPasswordInput
-              placeholder="Senha"
-              value={password}
-              onChangeText={setPassword}
-            />
+            <AuthPasswordInput value={password} onChangeText={setPassword} />
 
             <AuthPasswordInput
-              placeholder="Confirmar senha"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
-
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
+            <HelperText
+              type="error"
+              visible={!!error}
+              style={{ color: "#000000ff", fontWeight: "bold" }}
+            >
+              {error}
+            </HelperText>
             <AuthButton title="Registrar" onPress={handleRegister} />
 
-            <AnswerLink href="/login" linkText="Entrar" answer="Tem conta?"/>
-            
+            <AnswerLink href="/login" linkText="Entrar" answer="Tem conta?" />
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
@@ -133,9 +123,6 @@ const handleRegister = async () => {
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     backgroundColor: "#387373",
@@ -152,14 +139,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-  error: {
-    color: "#FFD1D1",
-    marginVertical: 10,
-    textAlign: "center",
-  },
   centerContent: {
-  flexGrow: 1,
-  justifyContent: "center", 
-  padding: 20,
-},
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: 20,
+  },
 });

@@ -1,3 +1,6 @@
+import AuthButton from "@/components/AuthButton";
+import TaskCard from "@/components/TaskCard";
+import TaskFormModal from "@/components/TaskModal";
 import { useApi } from "@/hooks/useApi";
 import {
   //  completeTask,
@@ -8,28 +11,15 @@ import {
   updateTask,
 } from "@/services/taskService";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { formatDateBR } from "@/utils/formatDate";
-import { TaskModal } from "../TaskModal";
+import { FlatList, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Text } from "react-native-paper";
 
 export default function TasksScreen() {
   const { request, loading, error } = useApi();
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
 
-  /* -------------------------------------------------------------
-      CARREGAR TASKS
-  ------------------------------------------------------------- */
   useEffect(() => {
     loadTasks();
   }, []);
@@ -55,38 +45,18 @@ export default function TasksScreen() {
   /* -------------------------------------------------------------
       SALVAR (CREATE / UPDATE)
   ------------------------------------------------------------- */
-  async function handleSave(data: any) {
-    let res;
 
-    if (editingTask) {
-      res = await request(() => updateTask(editingTask.id!, data));
-    } else {
-      res = await request(() => createTask(data));
-    }
+  async function handleSave(data: any) {
+    const res = editingTask
+      ? await request(() => updateTask(editingTask.id, data))
+      : await request(() => createTask(data));
 
     if (res) {
+      loadTasks();
       setModalVisible(false);
       setEditingTask(null);
-      loadTasks();
     }
   }
-
-  /* -------------------------------------------------------------
-      COMPLETAR TASK
-  ------------------------------------------------------------- */
-  async function handleComplete(id: number) {
-    //const res = await request(() => completeTask(id));
-    //if (res) loadTasks();
-  }
-
-  /* -------------------------------------------------------------
-      DELETAR
-  ------------------------------------------------------------- */
-  async function handleDelete(id: number) {
-    const res = await request(() => deleteTask(id));
-    if (res) loadTasks();
-  }
-
   /* -------------------------------------------------------------
       UI
   ------------------------------------------------------------- */
@@ -94,131 +64,54 @@ export default function TasksScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Minhas Tarefas</Text>
 
-      {loading && <ActivityIndicator size="large" />}
-      {error && <Text style={styles.error}>{String(error)}</Text>}
+      {loading && <ActivityIndicator />}
+      {error && <Text>{String(error)}</Text>}
 
       <FlatList
         data={tasks}
-        keyExtractor={(item) => item.id!.toString()}
+        keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-
-              {item.topic && (
-                <Text style={styles.itemText}>Tópico: {item.topic}</Text>
-              )}
-
-              {item.limitDate && (
-                <Text style={styles.itemText}>
-                  Data limite: {formatDateBR(item.limitDate)}
-                </Text>
-              )}
-
-              {item.group?.title && (
-                <Text style={styles.itemText}>Grupo: {item.group.title}</Text>
-              )}
-            </View>
-
-            <View style={styles.buttons}>
-              {/* COMPLETAR */}
-              {!item.completedAt && (
-                <TouchableOpacity
-                  style={styles.completeButton}
-                  onPress={() => handleComplete(item.id!)}
-                >
-                  <Text style={styles.completeText}>✓</Text>
-                </TouchableOpacity>
-              )}
-
-              {/* EDITAR */}
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => openEditModal(item)}
-              >
-                <Text style={styles.editText}>Editar</Text>
-              </TouchableOpacity>
-
-              {/* EXCLUIR */}
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDelete(item.id!)}
-              >
-                <Text style={styles.deleteText}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <TaskCard
+            task={item}
+            onEdit={() => {
+              setEditingTask(item);
+              setModalVisible(true);
+            }}
+            onDelete={() => request(() => deleteTask(item.id)).then(loadTasks)}
+          />
         )}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={openCreateModal}>
-        <Text style={styles.addButtonText}>+ Criar Tarefa</Text>
-      </TouchableOpacity>
-
-      {/* MODAL */}
-      <TaskModal
-        visible={modalVisible}
-        task={editingTask ?? undefined} // 👈 agora funciona
-        onClose={() => {
-          setModalVisible(false);
+      <AuthButton
+        title="Criar Tarefa"
+        onPress={() => {
           setEditingTask(null);
+          setModalVisible(true);
         }}
+        style={{ marginTop: 12, backgroundColor: "#387373" }}
+        labelStyle={{ color: "#fff" }}
+      />
+
+      <TaskFormModal
+        visible={modalVisible}
+        task={editingTask}
+        onClose={() => setModalVisible(false)}
         onSave={handleSave}
       />
     </View>
   );
 }
 
-/* -------------------------------------------------------------
-        STYLES
-    ------------------------------------------------------------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
-  error: { color: "red", marginBottom: 10 },
-
-  item: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: "#fff",
   },
-
-  itemTitle: { fontSize: 18, fontWeight: "bold" },
-  itemDesc: { color: "#777", marginTop: 3 },
-  itemText: { fontSize: 13, color: "#444", marginTop: 2 },
-
-  buttons: { flexDirection: "row", gap: 10 },
-
-  editButton: { backgroundColor: "#4caf50", padding: 8, borderRadius: 6 },
-  editText: { color: "white" },
-
-  deleteButton: { backgroundColor: "#e53935", padding: 8, borderRadius: 6 },
-  deleteText: { color: "white" },
-
-  addButton: {
-    backgroundColor: "#2196f3",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
-  },
-
-  addButtonText: { color: "white", fontSize: 18 },
-
-  completeButton: {
-    backgroundColor: "#2ecc71",
-    padding: 8,
-    borderRadius: 6,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  completeText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#387373",
+    marginBottom: 16,
   },
 });

@@ -28,3 +28,22 @@ export async function updateUser(data: {
         return response.data;
     }, "Erro ao atualizar usuário");
 }
+
+export async function updatePassword(data: {
+  oldPassword: string;
+  newPassword: string;
+}) {
+  try {
+    const response = await api.put("/users/password", data);
+
+    if (response.status !== 200) {
+      throw new Error("Falha ao atualizar senha");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Erro ao atualizar senha"
+    );
+  }
+}

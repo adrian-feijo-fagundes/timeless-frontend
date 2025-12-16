@@ -1,25 +1,46 @@
 import React from "react";
-import { StyleSheet, TextInput, TextInputProps } from "react-native";
+import { StyleSheet } from "react-native";
+import { TextInput } from "react-native-paper";
 
-export default function AuthTextInput(props: TextInputProps) {
+type Props = React.ComponentProps<typeof TextInput> & {
+  variant?: "light" | "dark";
+};
+
+export default function AuthTextInput({
+  variant = "dark",
+  style,
+  ...props
+}: Props) {
+  const isLight = variant === "light";
+
   return (
     <TextInput
-      style={styles.input}
-      placeholderTextColor="#ffffffff"
       {...props}
+      mode="outlined"
+      style={[
+        styles.input,
+        isLight && styles.lightInput,
+        style,
+      ]}
+      theme={{
+        colors: {
+          primary: isLight ? "#387373" : "#ffffff",
+          outline: isLight ? "#387373" : "#ffffff",
+          onSurface: isLight ? "#387373" : "#ffffff",
+          onSurfaceVariant: isLight ? "#387373" : "#ffffff",
+        },
+      }}
     />
   );
 }
 
 const styles = StyleSheet.create({
   input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#ffffffff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    backgroundColor: "#4B9F9F",
-    color: "#fff",
+    height: 52,
+    marginBottom: 10,
+    backgroundColor: "#4b9f9f",
+  },
+  lightInput: {
+    backgroundColor: "#ffffff",
   },
 });

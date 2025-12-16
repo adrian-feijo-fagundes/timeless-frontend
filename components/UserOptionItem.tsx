@@ -9,7 +9,6 @@ interface Props {
   icon: keyof typeof FontAwesome.glyphMap;
   route?: string;
   onPress?: () => void;
-
 }
 
 export const handleLogout = async () => {
@@ -21,19 +20,24 @@ export const handleLogout = async () => {
 export function UserOptionItem({ title, icon, route, onPress }: Props) {
   const handlePress = () => {
     if (onPress) return onPress();
-    if (route) return router.push(`/${route}` as RelativePathString);
+    if (route) {
+      const normalized = route.startsWith("/") ? route : `/${route}`;
+      return router.push(normalized as RelativePathString);
+    }
   };
 
   return (
-    <Pressable 
+    <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [
-        styles.container,
-        pressed && styles.pressed
-      ]}
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
     >
       <View style={styles.left}>
-        <FontAwesome name={icon} size={20} color="#387373" style={styles.icon} />
+        <FontAwesome
+          name={icon}
+          size={20}
+          color="#387373"
+          style={styles.icon}
+        />
         <Text style={styles.title}>{title}</Text>
       </View>
 
@@ -42,21 +46,22 @@ export function UserOptionItem({ title, icon, route, onPress }: Props) {
   );
 }
 
-
 export default function ProfileOptions() {
   return (
     <View>
-      <UserOptionItem 
+      <UserOptionItem
         title="Informações Pessoais"
         icon="user"
-        route="/PersonalInfo"
+        route="user/PersonalInfo"
       />
 
-      <UserOptionItem 
-        title="Logout"
-        icon="sign-out"
-        onPress={handleLogout}
+      <UserOptionItem
+        title="Segurança"
+        icon="lock"
+        route="user/Security"
       />
+
+      <UserOptionItem title="Logout" icon="sign-out" onPress={handleLogout} />
     </View>
   );
 }
@@ -70,7 +75,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderColor: "rgba(216, 216, 216, 1)",
+    borderColor: "#d8d8d8ff",
     minHeight: 90,
   },
   pressed: {
@@ -88,5 +93,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#2F2F2F",
   },
-  
 });

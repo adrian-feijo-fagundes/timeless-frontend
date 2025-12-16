@@ -8,8 +8,6 @@ import {
   View,
   Platform,
   StatusBar,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 import { router } from "expo-router";
 import AuthPasswordInput from "@/components/AuthPasswordInput";

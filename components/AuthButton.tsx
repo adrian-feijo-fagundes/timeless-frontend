@@ -1,51 +1,45 @@
 import React from "react";
-import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle } from "react-native";
+import { StyleSheet, TextStyle, ViewStyle } from "react-native";
+import { Button } from "react-native-paper";
 
 type AuthButtonProps = {
   title: string;
   onPress: () => void;
   loading?: boolean;
   style?: ViewStyle;
+  labelStyle?: TextStyle;
 };
 
-export default function AuthButton({ title, onPress, loading, style }: AuthButtonProps) {
+export default function AuthButton({
+  title,
+  onPress,
+  loading,
+  style,
+  labelStyle,
+}: AuthButtonProps) {
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.btn,
-        pressed && styles.btnPressed,
-        loading && styles.btnDisabled,
-        style,
-      ]}
+    <Button
+      mode="contained"
       onPress={onPress}
+      loading={loading}
       disabled={loading}
+      rippleColor="#8FD3D3"
+      style={[styles.btn, style]}
+      labelStyle={[styles.label, labelStyle]}
+      contentStyle={{ paddingVertical: 6 }}
     >
-      {loading ? (
-        <ActivityIndicator color="#387373" />
-      ) : (
-        <Text style={styles.btnText}>{title}</Text>
-      )}
-    </Pressable>
+      {title}
+    </Button>
   );
 }
 
 const styles = StyleSheet.create({
   btn: {
-    height: 48,
-    backgroundColor: "#ffffffff",
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 6,
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
   },
-  btnPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  btnDisabled: {
-    opacity: 0.6,
-  },
-  btnText: {
+  label: {
     color: "#387373",
     fontWeight: "700",
     fontSize: 16,
