@@ -1,18 +1,18 @@
+import AuthTextInput from "@/components/AuthEmailInput";
 import { getUserLocal, updateUser } from "@/services/user";
 import { parseBirthDate } from "@/utils/parseBirthDate";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  View,
+  ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -28,9 +28,7 @@ export default function PersonalInfo() {
         const user = await getUserLocal();
         setName(user.name);
         setEmail(user.email);
-        setBirthDate(
-          new Date(user.birthday).toLocaleDateString("pt-BR")
-        );
+        setBirthDate(new Date(user.birthday).toLocaleDateString("pt-BR"));
       } catch (error) {
         console.log(error);
       }
@@ -69,72 +67,67 @@ export default function PersonalInfo() {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar backgroundColor="#FFF" barStyle="dark-content" />
-        <View style={{ flex: 1 }}>
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+      <View style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <ScrollView
-              contentContainerStyle={styles.container}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
+            {/* VOLTAR */}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
             >
-              {/* VOLTAR */}
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => router.back()}
-              >
-                <FontAwesome name="chevron-left" size={20} color="#387373" />
-                <Text style={styles.backText}>Voltar</Text>
-              </TouchableOpacity>
+              <FontAwesome name="chevron-left" size={20} color="#387373" />
+              <Text style={styles.backText}>Voltar</Text>
+            </TouchableOpacity>
 
-              <Text style={styles.title}>Informações Pessoais</Text>
+            <Text style={styles.title}>Informações Pessoais</Text>
 
-              {/* NOME */}
-              <Text style={styles.label}>Nome</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Digite seu nome"
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={setName}
-              />
+            {/* NOME */}
+            <Text style={styles.label}>Nome</Text>
+            <AuthTextInput
+              placeholder="Digite seu nome"
+              value={name}
+              onChangeText={setName}
+              activeOutlineColor="#000000ff"
+            />
 
-              {/* EMAIL */}
-              <Text style={styles.label}>E-mail</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Digite seu e-mail"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
+            <Text style={styles.label}>E-mail</Text>
+            <AuthTextInput
+              placeholder="Digite seu e-mail"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              activeOutlineColor="#000000ff"
+            />
 
-              {/* DATA DE NASCIMENTO */}
-              <Text style={styles.label}>Data de nascimento</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="DD/MM/AAAA"
-                placeholderTextColor="#999"
-                value={birthDate}
-                onChangeText={setBirthDate}
-              />
+            <Text style={styles.label}>Data de nascimento</Text>
+            <AuthTextInput
+              placeholder="DD/MM/AAAA"
+              value={birthDate}
+              onChangeText={setBirthDate}
+              activeOutlineColor="#000000ff"
+            />
 
-              {/* BOTÃO */}
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleSave}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Salvando..." : "Salvar Alterações"}
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </View>
+            {/* BOTÃO */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Salvando..." : "Salvar Alterações"}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }

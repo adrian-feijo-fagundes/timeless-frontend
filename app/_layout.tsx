@@ -1,5 +1,6 @@
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 import { GamificationProvider } from "@/contexts/GamificationContext";
+import { TasksProvider } from "@/contexts/TasksContext";
 import { checkAuth } from "@/services/authService";
 import {
   DarkTheme,
@@ -56,7 +57,11 @@ export default function RootLayout() {
   return (
     <PaperProvider>
       <AppDataProvider>
-        <RootLayoutInner />
+        <TasksProvider>
+          <GamificationProvider>
+            <RootLayoutInner />
+          </GamificationProvider>
+        </TasksProvider>
       </AppDataProvider>
     </PaperProvider>
   );

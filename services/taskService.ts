@@ -49,7 +49,33 @@ export interface TaskResponse {
         updatedAt?: Date;
     } | null;
 }
+// services/taskService.ts
 
+export type CompleteTaskResponse = {
+    task: {
+        id: number;
+        title: string;
+        status: "completed";
+        completedAt: string;
+        completedLate: boolean;
+    };
+    gamification: {
+        xpGained: number;
+        leveledUp: boolean;
+        newLevel?: number;
+        rewardXp?: number;
+        streak: number;
+        isNewStreakRecord: boolean;
+        newAchievement?: {
+            id: number;
+            type: string;
+            title: string;
+            description: string;
+            rewardXp: number;
+            unlockedAt: string;
+        };
+    };
+};
 /* -----------------------------------------------------
     CREATE TASK
 ----------------------------------------------------- */
@@ -108,4 +134,12 @@ export async function deleteTask(id: number): Promise<boolean> {
         await api.delete(`/task/${id}`);
         return true;
     },"Erro ao remover tarefa");
+}
+
+
+export async function completeTask(id: number): Promise<CompleteTaskResponse> {
+    return executeWithErrorHandling(async () => { 
+        const response = await api.patch(`/task/${id}/complete`);
+        return response.data;
+    },"Erro ao completar tarefa");
 }

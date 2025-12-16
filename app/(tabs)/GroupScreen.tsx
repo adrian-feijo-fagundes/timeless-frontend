@@ -10,9 +10,9 @@ import {
   updateGroup,
 } from "@/services/groups";
 
+import AuthButton from "@/components/AuthButton";
 import GroupCard from "@/components/GroupCard";
 import GroupFormModal from "@/components/GroupFormModal";
-import AuthButton from "@/components/AuthButton";
 
 export default function GroupsScreen() {
   const { request, loading, error } = useApi();
@@ -71,7 +71,7 @@ export default function GroupsScreen() {
           setModalVisible(true);
         }}
         style={{ marginTop: 12, backgroundColor: "#387373" }}
-        labelStyle={{ color: '#ffffffff' }}
+        labelStyle={{ color: "#ffffffff" }}
       />
 
       <GroupFormModal

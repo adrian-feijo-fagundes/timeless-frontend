@@ -1,16 +1,16 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { FontAwesome } from '@expo/vector-icons';
+import { HapticTab } from "@/components/haptic-tab";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "white",     // ativo
-        tabBarInactiveTintColor:"#888", // inativo
+        tabBarActiveTintColor: "white", // ativo
+        tabBarInactiveTintColor: "#888", // inativo
         tabBarStyle: {
           backgroundColor: "#387373",
         },
@@ -18,11 +18,10 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}
     >
-
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -30,25 +29,34 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="user"
+        name="GameficationScreen"
         options={{
-          title: 'User',
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="TodoList"
-        options={{
-          title: 'Tasks',
+          title: "Estátisticas",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="tasks" size={28} color={color} />
           ),
         }}
       />
 
+      <Tabs.Screen
+        name="GroupScreen"
+        options={{
+          title: "Grupos",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="tasks" size={28} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="user"
+        options={{
+          title: "User",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="user" size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

@@ -20,7 +20,7 @@ export default function GroupSelector({ groups, value, onChange }: Props) {
 
   return (
     <View>
-      <Text style={styles.label}>Grupo</Text>
+      <Text style={styles.label}>Grupo (Obrigatório)</Text>
 
       <View style={styles.row}>
         {groups.map((g) => {
@@ -30,14 +30,8 @@ export default function GroupSelector({ groups, value, onChange }: Props) {
             <Chip
               key={g.id}
               onPress={() => select(g.id)}
-              style={[
-                styles.chip,
-                selected && styles.chipSelected,
-              ]}
-              textStyle={[
-                styles.chipText,
-                selected && styles.chipTextSelected,
-              ]}
+              style={[styles.chip, selected && styles.chipSelected]}
+              textStyle={[styles.chipText, selected && styles.chipTextSelected]}
             >
               {g.title}
             </Chip>

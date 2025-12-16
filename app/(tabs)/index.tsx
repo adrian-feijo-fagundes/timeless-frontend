@@ -1,187 +1,239 @@
-import { TaskItem } from "@/components/TaskItem";
-
+import AuthButton from "@/components/AuthButton";
 import { StreakCounter } from "@/components/gamification/StreakCounter";
 import { XPBar } from "@/components/gamification/XPBar";
+import TaskCard from "@/components/TaskCard";
+import TaskFormModal from "@/components/TaskModal";
 import { useGamification } from "@/contexts/GamificationContext";
-import { FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useTasks } from "@/contexts/TasksContext";
+import { useApi } from "@/hooks/useApi";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+  completeTask,
+  createTask,
+  deleteTask,
+  TaskResponse,
+  updateTask,
+} from "@/services/taskService";
+import React, { useState } from "react";
+import { FlatList, Modal, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Snackbar, Text } from "react-native-paper";
 
 export default function TasksScreen() {
-  const {xp, streak} = useGamification();
-  const [tasks, setTasks] = useState<any[]>([]);
+  const { tasks, loadingTasks, refreshTasks } = useTasks();
+  const { refresh: refreshGamification } = useGamification();
+  const { request, loading, error } = useApi();
+
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
 
-  const [filter, setFilter] = useState<"all"|"active"|"completed"|"today">("all");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarText, setSnackbarText] = useState("");
 
-  const addTask = (task: any) => {
-    const newTask = {
-      id: Date.now().toString(),
-      title: task.title,
-      desc: task.desc || "",
-      isHabit: task.isHabit,
-      completed: false,
-      createdAt: new Date(),
+  const [levelUpVisible, setLevelUpVisible] = useState(false);
+  const [newLevel, setNewLevel] = useState<number | null>(null);
+
+  const [achievementVisible, setAchievementVisible] = useState(false);
+  const [newAchievement, setNewAchievement] = useState<any>(null);
+
+  function showSnackbar(message: string) {
+    setSnackbarText(message);
+    setSnackbarVisible(true);
+  }
+
+  /* -------------------------------------------------------------
+      COMPLETE TASK
+  ------------------------------------------------------------- */
+  async function handleCompleteTask(taskId: number) {
+    const res = await request(() => completeTask(taskId));
+    if (!res) return;
+
+    await refreshTasks();
+    await refreshGamification();
+
+    const { gamification } = res;
+
+    if (gamification?.xpGained > 0) {
+      showSnackbar(`+${gamification.xpGained} XP`);
+    }
+
+    if (gamification?.leveledUp && gamification.newLevel) {
+      setNewLevel(gamification.newLevel);
+      setLevelUpVisible(true);
+    }
+
+    if (gamification?.newAchievement) {
+      setNewAchievement(gamification.newAchievement);
+      setAchievementVisible(true);
+    }
+  }
+
+  /* -------------------------------------------------------------
+      CREATE / UPDATE
+  ------------------------------------------------------------- */
+  function parseDate(date: string): Date | undefined {
+    if (!date) return undefined;
+    const [day, month, year] = date.split("/");
+    if (!day || !month || !year) return undefined;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  async function handleSave(data: any) {
+    const payload = {
+      ...data,
+      limitDate: parseDate(data.limitDate),
     };
 
-    setTasks([newTask, ...tasks]);
-    setModalVisible(false);
-  };
+    const res = editingTask
+      ? await request(() => updateTask(editingTask.id, payload))
+      : await request(() => createTask(payload));
 
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-
-
-        return { ...t, completed: !t.completed };
-      })
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "active") return !t.completed;
-    if (filter === "completed") return t.completed;
-    if (filter === "today") {
-      const d = new Date(t.createdAt);
-      d.setHours(0,0,0,0);
-      return d.getTime() === today.getTime();
+    if (res) {
+      await refreshTasks();
+      setModalVisible(false);
+      setEditingTask(null);
     }
-    return true;
-  });
+  }
 
+  /* -------------------------------------------------------------
+      UI
+  ------------------------------------------------------------- */
   return (
-      <SafeAreaView style={styles.safe}>
-        <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <Text style={styles.title}>Minhas Tarefas</Text>
 
-          {/* HEADER */}
-          <View style={styles.header}>
-            <FontAwesome name="tasks" size={28} color="#387373" />
-            <Text style={styles.title}>Minhas Tarefas</Text>
+      <XPBar />
+      <StreakCounter />
+
+      {(loading || loadingTasks) && <ActivityIndicator />}
+      {error && <Text>{String(error)}</Text>}
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <TaskCard
+            task={item}
+            onEdit={() => {
+              setEditingTask(item);
+              setModalVisible(true);
+            }}
+            onDelete={() =>
+              request(() => deleteTask(item.id)).then(refreshTasks)
+            }
+            onComplete={() => handleCompleteTask(item.id)}
+          />
+        )}
+      />
+
+      <AuthButton
+        title="Criar Tarefa"
+        onPress={() => {
+          setEditingTask(null);
+          setModalVisible(true);
+        }}
+        style={{ marginTop: 12, backgroundColor: "#387373" }}
+        labelStyle={{ color: "#fff" }}
+      />
+
+      <TaskFormModal
+        visible={modalVisible}
+        task={editingTask}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSave}
+      />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        style={styles.snackbar}
+        icon="star"
+      >
+        <Text style={styles.snackbarText}>{snackbarText}</Text>
+      </Snackbar>
+
+      <Modal transparent visible={levelUpVisible} animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.modal}>
+            <Text variant="titleLarge" style={styles.modalTitle}>
+              🎉 Level Up!
+            </Text>
+
+            <Text style={styles.modalText}>
+              Você chegou ao nível{" "}
+              <Text style={{ fontWeight: "700" }}>{newLevel}</Text>
+            </Text>
+
+            <AuthButton
+              title="Continuar"
+              onPress={() => setLevelUpVisible(false)}
+              style={{ backgroundColor: "#387373", width: "100%" }}
+              labelStyle={{ color: "#fff" }}
+            />
           </View>
+        </View>
+      </Modal>
 
-          {/* GAMIFICAÇÃO */}
-          <XPBar xp={xp} required={0} />
-          <StreakCounter streak={streak} />
+      <Modal transparent visible={achievementVisible} animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.modal}>
+            <Text variant="titleLarge">🏆 Nova Conquista!</Text>
 
-          {/* FILTROS */}
-          <View style={styles.filters}>
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "all" && styles.active]}
-              onPress={() => setFilter("all")}
-            >
-              <Text style={styles.filterText}>Todas</Text>
-            </TouchableOpacity>
+            <Text>{newAchievement?.title}</Text>
+            <Text>{newAchievement?.description}</Text>
 
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "active" && styles.active]}
-              onPress={() => setFilter("active")}
-            >
-              <Text style={styles.filterText}>Ativas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "completed" && styles.active]}
-              onPress={() => setFilter("completed")}
-            >
-              <Text style={styles.filterText}>Feitas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterBtn, filter === "today" && styles.active]}
-              onPress={() => setFilter("today")}
-            >
-              <Text style={styles.filterText}>Hoje</Text>
-            </TouchableOpacity>
+            <AuthButton
+              title="Fechar"
+              onPress={() => setAchievementVisible(false)}
+            />
           </View>
-
-          {/* BOTÃO NOVA TAREFA */}
-          <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-            <FontAwesome name="plus" size={20} color="#fff" />
-            <Text style={styles.addText}>Nova Tarefa</Text>
-          </TouchableOpacity>
-
-          {/* LISTA */}
-          {filteredTasks.length === 0 ? (
-            <Text style={styles.emptyText}>Nenhuma tarefa aqui</Text>
-          ) : (
-            filteredTasks.map((t) => (
-              <TaskItem
-                key={t.id}
-                task={t}
-                onToggle={() => toggleTask(t.id)}
-                onDelete={() => deleteTask(t.id)}
-              />
-            ))
-          )}
-
-        </ScrollView>
-
-
-      </SafeAreaView>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f6f6f6" },
-  container: { padding: 20 },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: "#fff",
   },
-  title: { fontSize: 26, color: "#387373", fontWeight: "bold" },
-
-  filters: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#387373",
+    marginBottom: 16,
   },
-  filterBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    backgroundColor: "#ddd",
-  },
-  active: {
+  snackbar: {
     backgroundColor: "#387373",
+    borderRadius: 12,
+    marginBottom: 12,
   },
-  filterText: {
+  snackbarText: {
     color: "#fff",
     fontWeight: "600",
   },
-
-  addBtn: {
-    flexDirection: "row",
-    backgroundColor: "#387373",
-    padding: 14,
-    borderRadius: 10,
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
   },
-  addText: { color: "#fff", fontWeight: "600" },
-
-  emptyText: {
+  modal: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 20,
+    width: "85%",
+    alignItems: "center",
+    elevation: 6,
+  },
+  modalTitle: {
+    marginBottom: 8,
+    fontWeight: "700",
+  },
+  modalText: {
     textAlign: "center",
-    color: "#777",
-    marginTop: 20,
-    fontSize: 16,
+    marginBottom: 16,
+    opacity: 0.8,
   },
 });

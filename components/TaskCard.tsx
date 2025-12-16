@@ -1,42 +1,83 @@
-// components/TaskCard.tsx
+import { formatDateBR } from "@/utils/formatDate";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { IconButton, Text } from "react-native-paper";
-
+import { IconButton, Text, useTheme } from "react-native-paper";
 type Props = {
   task: any;
   onEdit: () => void;
   onDelete: () => void;
+  onComplete: () => void;
 };
 
-export default function TaskCard({ task, onEdit, onDelete }: Props) {
+export default function TaskCard({
+  task,
+  onEdit,
+  onDelete,
+  onComplete,
+}: Props) {
+  const theme = useTheme();
+  const completed = !!task.completedAt; // ajuste ao seu backend
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, completed && { opacity: 0.6 }]}>
       <View style={{ flex: 1 }}>
-        <Text variant="titleMedium" style={styles.title}>
+        <Text
+          variant="titleMedium"
+          style={[
+            styles.title,
+            completed && { textDecorationLine: "line-through" },
+          ]}
+        >
           {task.title}
         </Text>
 
         {!!task.description && (
-          <Text style={{ color: "#ffffffff" }} variant="bodySmall">{task.description}</Text>
+          <Text style={styles.text} variant="bodySmall">
+            {task.description}
+          </Text>
+        )}
+
+        {!!task.topic && (
+          <Text style={styles.text} variant="bodySmall">
+            Tópico: {task.topic}
+          </Text>
         )}
 
         {!!task.limitDate && (
-          <Text style={{ color: "#ffffffff" }} variant="bodySmall">
-            Data limite: {task.limitDate}
+          <Text style={styles.text} variant="bodySmall">
+            Data limite: {formatDateBR(task.limitDate)}
           </Text>
         )}
 
         {!!task.group?.title && (
-          <Text style={{ color: "#ffffffff" }} variant="bodySmall">
+          <Text style={styles.text} variant="bodySmall">
             Grupo: {task.group.title}
           </Text>
         )}
       </View>
 
       <View style={styles.actions}>
-        <IconButton icon="pencil" iconColor="#fff" onPress={onEdit} />
-        <IconButton icon="delete" iconColor="red" onPress={onDelete} />
+        {!completed && (
+          <IconButton
+            icon="check"
+            iconColor="#fff"
+            onPress={onComplete}
+            accessibilityLabel="Completar tarefa"
+          />
+        )}
+
+        <IconButton
+          icon="pencil"
+          iconColor="#fff"
+          onPress={onEdit}
+          disabled={completed}
+        />
+
+        <IconButton
+          icon="delete"
+          iconColor={theme.colors.error}
+          onPress={onDelete}
+        />
       </View>
     </View>
   );
@@ -55,7 +96,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
+  text: {
+    color: "#fff",
+  },
   actions: {
     flexDirection: "row",
+    alignItems: "center",
   },
 });

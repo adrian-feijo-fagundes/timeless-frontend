@@ -1,44 +1,45 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+// components/gamification/XPBar.tsx
+import { useGamification } from "@/contexts/GamificationContext";
+import { StyleSheet, View } from "react-native";
+import { ProgressBar, Text } from "react-native-paper";
 
-interface XPBarProps {
-  xp: number;
-  required: number;
-}
+export function XPBar() {
+  const { data } = useGamification();
+  if (!data) return null;
 
-export function XPBar({ xp, required }: XPBarProps) {
-  const progress = Math.min(xp / required, 1);
+  const progress = data.xp / data.xpForNextLevel;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>XP: {xp} / {required}</Text>
-
-      <View style={styles.barBackground}>
-        <View style={[styles.barFill, { width: `${progress * 100}%` }]} />
+      <View style={styles.header}>
+        <Text style={styles.level}>Nível {data.level}</Text>
+        <Text style={styles.xp}>
+          {data.xp}/{data.xpForNextLevel} XP
+        </Text>
       </View>
+
+      <ProgressBar progress={progress} color="#387373" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  label: {
-    fontSize: 14,
-    color: "#4A4A4A",
-    marginBottom: 6,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
   },
-  barBackground: {
-    height: 14,
-    width: "100%",
-    backgroundColor: "#D9E4E4",
-    borderRadius: 10,
-    overflow: "hidden",
+  level: {
+    color: "#387373",
+    fontSize: 20,
+    fontWeight: "600",
   },
-  barFill: {
-    height: "100%",
-    backgroundColor: "#387373",
+  xp: {
+    color: "#387373",
+    fontSize: 18,
+    opacity: 0.7,
   },
 });
