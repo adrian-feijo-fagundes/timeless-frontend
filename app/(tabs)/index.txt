@@ -130,7 +130,7 @@ export default function TasksScreen() {
           setEditingTask(null);
           setModalVisible(true);
         }}
-        style={{ marginTop: 12, backgroundColor: "#387373",  bottom: 50 }}
+        style={{ marginTop: 12, backgroundColor: "#387373", bottom: 50}}
         labelStyle={{ color: "#fff" }}
       />
 
@@ -155,7 +155,7 @@ export default function TasksScreen() {
         <View style={styles.overlay}>
           <View style={styles.modal}>
             <Text variant="titleLarge" style={styles.modalTitle}>
-              🎉 Level Up!
+               Level Up!
             </Text>
 
             <Text style={styles.modalText}>
@@ -173,10 +173,11 @@ export default function TasksScreen() {
         </View>
       </Modal>
 
+        
       <Modal transparent visible={achievementVisible} animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text variant="titleLarge">🏆 Nova Conquista!</Text>
+            <Text variant="titleLarge"> Nova Conquista!</Text>
 
             <Text>{newAchievement?.title}</Text>
             <Text>{newAchievement?.description}</Text>

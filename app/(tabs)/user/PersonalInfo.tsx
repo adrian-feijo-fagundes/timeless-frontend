@@ -91,6 +91,8 @@ export default function PersonalInfo() {
             {/* NOME */}
             <Text style={styles.label}>Nome</Text>
             <AuthTextInput
+              variant="light"
+
               placeholder="Digite seu nome"
               value={name}
               onChangeText={setName}
@@ -99,6 +101,8 @@ export default function PersonalInfo() {
 
             <Text style={styles.label}>E-mail</Text>
             <AuthTextInput
+              variant="light"
+
               placeholder="Digite seu e-mail"
               value={email}
               onChangeText={setEmail}
@@ -109,6 +113,8 @@ export default function PersonalInfo() {
 
             <Text style={styles.label}>Data de nascimento</Text>
             <AuthTextInput
+              variant="light"
+
               placeholder="DD/MM/AAAA"
               value={birthDate}
               onChangeText={setBirthDate}

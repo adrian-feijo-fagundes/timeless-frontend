@@ -67,7 +67,7 @@ export default function GroupsScreen() {
           setEditingGroup(null);
           setModalVisible(true);
         }}
-        style={{ marginTop: 12, backgroundColor: "#387373" }}
+        style={{ marginTop: 12, backgroundColor: "#387373", bottom: 50 }}
         labelStyle={{ color: "#fff" }}
       />
 

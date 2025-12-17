@@ -16,34 +16,34 @@ import { Button, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChangePasswordScreen() {
-  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      alert("Preencha todos os campos.");
-      return;
-    }
+const handleSave = async () => {
+  if (!newPassword || !confirmPassword) {
+    alert("Preencha todos os campos.");
+    return;
+  }
 
-    if (newPassword !== confirmPassword) {
-      alert("As senhas não coincidem.");
-      return;
-    }
+  if (newPassword !== confirmPassword) {
+    alert("As senhas não coincidem.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      await updatePassword({ oldPassword, newPassword });
-      alert("Senha atualizada com sucesso!");
-      router.back();
-    } catch (error: any) {
-      alert(error.message || "Erro ao atualizar senha.");
-    }
+  try {
+    await updatePassword({ newPassword });
+    alert("Senha atualizada com sucesso!");
+    router.replace("/login");
+  } catch (error: any) {
+    alert(error.message || "Erro ao atualizar senha.");
+  }
 
-    setLoading(false);
-  };
+  setLoading(false);
+};
+
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -68,15 +68,6 @@ export default function ChangePasswordScreen() {
       >
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Alterar Senha</Text>
-
-          <Text style={styles.label}>Senha atual</Text>
-          <AuthPasswordInput
-            variant="light"
-            placeholder="Digite sua senha atual"
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            activeOutlineColor="#000000ff"
-          />
 
           <Text style={styles.label}>Nova senha</Text>
           <AuthPasswordInput

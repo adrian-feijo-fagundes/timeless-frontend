@@ -20,6 +20,7 @@ import AuthTextInput from "@/components/AuthEmailInput";
 import { loginUser } from "@/services/authService";
 import { HelperText } from "react-native-paper";
 import AuthEmailInput from "@/components/AuthEmailInput";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function LoginScreen() {
   const { setLogged } = useAppData();
@@ -55,56 +56,64 @@ export default function LoginScreen() {
       accessible={false}
       disabled={Platform.OS === "web"}
     >
-      <KeyboardAvoidingView
+      <LinearGradient
+        colors={["#3F8F8F", "#387373", "#023030ff", "#012020ff"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.inner}>
-          <Image
-            source={require("../../assets/images/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={styles.inner}>
+            <Image
+              source={require("../../assets/images/icon.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-          <Text style={styles.title}>Bem-vindo</Text>
-          <Text style={styles.subtitle}>Faça login para continuar</Text>
+            <Text style={styles.title}>Bem-vindo</Text>
+            <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-          <AuthEmailInput
-            label="E-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <AuthEmailInput
+              label="E-mail"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-          <AuthPasswordInput
-            value={password}
-            onChangeText={setPassword}
-            style={{ marginTop: 5 }}
-          />
+            <AuthPasswordInput
+              value={password}
+              onChangeText={setPassword}
+              style={{ marginTop: 5 }}
+            />
 
-          <HelperText
-            type="error"
-            visible={!!error}
-            style={{ color: "#000000ff", fontWeight: "bold" }}
-          >
-            {error}
-          </HelperText>
+            <HelperText
+              type="error"
+              visible={!!error}
+              style={{ color: "#000000ff", fontWeight: "bold" }}
+            >
+              {error}
+            </HelperText>
 
-          <AuthButton
-            title="Entrar"
-            onPress={handleLogin}
-            loading={loading}
-            style={{ marginTop: 12 }}
-          />
+            <AuthButton
+              title="Entrar"
+              onPress={handleLogin}
+              loading={loading}
+              style={{ marginTop: 12 }}
+            />
 
-          <AnswerLink
-            href="/register"
-            linkText="Cadastre-se"
-            answer="Não tem conta?"
-          />
-        </View>
-      </KeyboardAvoidingView>
+            <AnswerLink
+              href="/register"
+              linkText="Cadastre-se"
+              answer="Não tem conta?"
+            />
+
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </TouchableWithoutFeedback>
   );
 }
