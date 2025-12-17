@@ -15,12 +15,11 @@ import {
 
 import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
-import AuthPasswordInput from "@/components/AuthPasswordInput";
-import AuthTextInput from "@/components/AuthEmailInput";
-import { loginUser } from "@/services/authService";
-import { HelperText } from "react-native-paper";
 import AuthEmailInput from "@/components/AuthEmailInput";
+import AuthPasswordInput from "@/components/AuthPasswordInput";
+import { loginUser } from "@/services/authService";
 import { LinearGradient } from "expo-linear-gradient";
+import { HelperText } from "react-native-paper";
 
 export default function LoginScreen() {
   const { setLogged } = useAppData();
@@ -110,7 +109,6 @@ export default function LoginScreen() {
               linkText="Cadastre-se"
               answer="Não tem conta?"
             />
-
           </View>
         </KeyboardAvoidingView>
       </LinearGradient>
