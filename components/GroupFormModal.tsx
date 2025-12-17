@@ -56,14 +56,12 @@ export default function GroupFormModal({
             label="Nome do grupo"
             value={title}
             onChangeText={setTitle}
-           
           />
 
           <AuthTextInput
             label="Descrição"
             value={description}
             onChangeText={setDescription}
-           
           />
 
           <WeekDaysSelector value={days} onChange={setDays} />
@@ -73,12 +71,11 @@ export default function GroupFormModal({
             keyboardType="numeric"
             value={String(maxTasksPerDay)}
             onChangeText={(v) => setMaxTasksPerDay(Number(v) || 0)}
-
           />
 
           <View style={styles.buttons}>
-            <AuthButton title="Salvar" onPress={handleSave} />
-            <AuthButton title="Cancelar" onPress={onClose} />
+            <AuthButton title="Salvar" onPress={handleSave} variant="light" />
+            <AuthButton title="Cancelar" onPress={onClose} variant="light" />
           </View>
         </View>
       </View>

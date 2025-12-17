@@ -103,10 +103,9 @@ export default function TaskFormModal({
             value={groupId}
             onChange={setGroupId}
           />
-
           <View style={styles.buttons}>
-            <AuthButton title="Salvar" onPress={handleSave} />
-            <AuthButton title="Cancelar" onPress={onClose} />
+            <AuthButton title="Salvar" onPress={handleSave} variant="light" />
+            <AuthButton title="Cancelar" onPress={onClose} variant="light" />
           </View>
         </View>
       </View>

@@ -20,6 +20,7 @@ import AuthEmailInput from "@/components/AuthEmailInput";
 import AuthTextInput from "@/components/AuthTextInput";
 import { loginUser, registerUser } from "@/services/authService";
 import { HelperText } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
@@ -71,10 +72,16 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+      <LinearGradient
+        colors={["#3F8F8F", "#387373", "#023030ff", "#012020ff",]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
       <TouchableWithoutFeedback
         onPress={Keyboard.dismiss}
         disabled={Platform.OS === "web"}
@@ -118,14 +125,14 @@ export default function RegisterScreen() {
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#387373",
   },
   scrollContainer: {
     padding: 20,

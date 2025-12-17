@@ -30,8 +30,8 @@ export async function updateUser(data: {
 }
 
 export async function updatePassword(data: {
-  oldPassword: string;
   newPassword: string;
+  oldPassword?: string;
 }) {
   try {
     const response = await api.put("/users/password", data);
@@ -44,6 +44,25 @@ export async function updatePassword(data: {
   } catch (error: any) {
     throw new Error(
       error.response?.data?.message || "Erro ao atualizar senha"
+    );
+  }
+}
+
+export async function resetPassword(data: {
+  token: string;
+  newPassword: string;
+}) {
+  try {
+    const response = await api.put("/auth/reset-password", data);
+
+    if (response.status !== 200) {
+      throw new Error("Falha ao redefinir senha");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Erro ao redefinir senha"
     );
   }
 }
