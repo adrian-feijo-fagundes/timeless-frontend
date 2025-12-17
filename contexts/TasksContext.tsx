@@ -14,30 +14,27 @@ const TasksContext = createContext<TasksContextType>({} as TasksContextType);
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
   const { request, loading } = useApi();
-  const { isAuthenticated, loadingAppData } = useAppData();
+  const { logged } = useAppData();
 
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
 
   async function refreshTasks() {
-    if (!isAuthenticated) return;
+    if (!logged) return;
 
     const res = await request(() => listTasks());
     if (res) setTasks(res);
   }
 
   useEffect(() => {
-    // ainda carregando AppData (token, user, etc)
-    if (loadingAppData) return;
-
-    // logout
-    if (!isAuthenticated) {
+    // logout → limpa estado
+    if (!logged) {
       setTasks([]);
       return;
     }
 
-    // login concluído → carrega tarefas
+    // login → carrega tarefas
     refreshTasks();
-  }, [isAuthenticated, loadingAppData]);
+  }, [logged]);
 
   return (
     <TasksContext.Provider

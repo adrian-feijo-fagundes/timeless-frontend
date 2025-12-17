@@ -1,9 +1,11 @@
 import AuthButton from "@/components/AuthButton";
 import { StreakCounter } from "@/components/gamification/StreakCounter";
 import { XPBar } from "@/components/gamification/XPBar";
+import GroupFilter from "@/components/GroupFilter";
 import TaskCard from "@/components/TaskCard";
 import TaskFormModal from "@/components/TaskModal";
 import { useGamification } from "@/contexts/GamificationContext";
+import { useGroups } from "@/contexts/GroupsContext";
 import { useTasks } from "@/contexts/TasksContext";
 import { useApi } from "@/hooks/useApi";
 import {
@@ -21,6 +23,9 @@ export default function TasksScreen() {
   const { tasks, loadingTasks, refreshTasks } = useTasks();
   const { refresh: refreshGamification } = useGamification();
   const { request, loading, error } = useApi();
+
+  const { groups } = useGroups();
+  const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
@@ -76,6 +81,20 @@ export default function TasksScreen() {
     return new Date(Number(year), Number(month) - 1, Number(day));
   }
 
+  function getTasksByGroup() {
+    const filteredTasks =
+      selectedGroups.length === 0
+        ? tasks
+        : tasks.filter(
+            (task) => task.group && selectedGroups.includes(task.group.id)
+          );
+
+    return groups.map((group) => ({
+      group,
+      tasks: filteredTasks.filter((task) => task.group?.id === group.id),
+    }));
+  }
+
   async function handleSave(data: any) {
     const payload = {
       ...data,
@@ -94,34 +113,58 @@ export default function TasksScreen() {
   }
 
   /* -------------------------------------------------------------
-      UI
-  ------------------------------------------------------------- */
+        UI
+    ------------------------------------------------------------- */
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Minhas Tarefas</Text>
 
-      <XPBar />
-      <StreakCounter />
-
       {(loading || loadingTasks) && <ActivityIndicator />}
       {error && <Text>{String(error)}</Text>}
 
+      <XPBar />
+      <StreakCounter />
+
+      <GroupFilter
+        groups={groups}
+        value={selectedGroups}
+        onChange={setSelectedGroups}
+      />
+
       <FlatList
-        data={tasks}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <TaskCard
-            task={item}
-            onEdit={() => {
-              setEditingTask(item);
-              setModalVisible(true);
-            }}
-            onDelete={() =>
-              request(() => deleteTask(item.id)).then(refreshTasks)
-            }
-            onComplete={() => handleCompleteTask(item.id)}
-          />
-        )}
+        data={getTasksByGroup()}
+        keyExtractor={(item) => String(item.group.id)}
+        renderItem={({ item }) =>
+          item.tasks.length > 0 ? (
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: "#387373",
+                  marginBottom: 8,
+                }}
+              >
+                {item.group.title}
+              </Text>
+
+              {item.tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onEdit={() => {
+                    setEditingTask(task);
+                    setModalVisible(true);
+                  }}
+                  onDelete={() =>
+                    request(() => deleteTask(task.id)).then(refreshTasks)
+                  }
+                  onComplete={() => handleCompleteTask(task.id)}
+                />
+              ))}
+            </View>
+          ) : null
+        }
       />
 
       <AuthButton
