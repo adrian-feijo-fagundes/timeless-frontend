@@ -1,3 +1,4 @@
+import { useAppData } from "@/contexts/AppDataContext";
 import { getGamification } from "@/services/gameficationService";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -22,6 +23,7 @@ type GamificationData = {
 
 type GamificationContextType = {
   data: GamificationData | null;
+  loading: boolean;
   refresh: () => Promise<void>;
 };
 
@@ -34,19 +36,33 @@ export function GamificationProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { logged } = useAppData();
   const [data, setData] = useState<GamificationData | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function refresh() {
-    const res = await getGamification();
-    setData(res);
+    if (!logged) return;
+    try {
+      setLoading(true);
+      const res = await getGamification();
+      setData(res);
+    } catch (err) {
+      console.log("Erro ao buscar gamificação:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    refresh();
-  }, []);
+    if (logged) {
+      refresh();
+    } else {
+      setData(null);
+    }
+  }, [logged]);
 
   return (
-    <GamificationContext.Provider value={{ data, refresh }}>
+    <GamificationContext.Provider value={{ data, loading, refresh }}>
       {children}
     </GamificationContext.Provider>
   );

@@ -1,5 +1,6 @@
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 import { GamificationProvider } from "@/contexts/GamificationContext";
+import { GroupsProvider } from "@/contexts/GroupsContext";
 import { TasksProvider } from "@/contexts/TasksContext";
 import { checkAuth } from "@/services/authService";
 import {
@@ -58,9 +59,11 @@ export default function RootLayout() {
     <PaperProvider>
       <AppDataProvider>
         <TasksProvider>
-          <GamificationProvider>
-            <RootLayoutInner />
-          </GamificationProvider>
+          <GroupsProvider>
+            <GamificationProvider>
+              <RootLayoutInner />
+            </GamificationProvider>
+          </GroupsProvider>
         </TasksProvider>
       </AppDataProvider>
     </PaperProvider>

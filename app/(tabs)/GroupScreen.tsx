@@ -1,32 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 
 import { useApi } from "@/hooks/useApi";
-import {
-  createGroup,
-  deleteGroup,
-  listGroups,
-  updateGroup,
-} from "@/services/groups";
+import { createGroup, deleteGroup, updateGroup } from "@/services/groups";
 
 import AuthButton from "@/components/AuthButton";
 import GroupCard from "@/components/GroupCard";
 import GroupFormModal from "@/components/GroupFormModal";
+import { useGroups } from "@/contexts/GroupsContext";
+import { useTasks } from "@/contexts/TasksContext";
 
 export default function GroupsScreen() {
   const { request, loading, error } = useApi();
-  const [groups, setGroups] = useState<any[]>([]);
+  const { groups, refreshGroups } = useGroups();
+  const { refreshTasks } = useTasks();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editingGroup, setEditingGroup] = useState<any>(null);
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
+  async function handleDeleteGroup(groupId: number) {
+    const res = await request(() => deleteGroup(groupId));
 
-  async function loadGroups() {
-    const res = await request(() => listGroups());
-    if (res) setGroups(res);
+    if (res) {
+      refreshGroups();
+      refreshTasks();
+    }
   }
 
   async function handleSave(data: any) {
@@ -35,7 +34,7 @@ export default function GroupsScreen() {
       : await request(() => createGroup(data));
 
     if (res) {
-      loadGroups();
+      refreshGroups();
       setModalVisible(false);
     }
   }
@@ -57,9 +56,7 @@ export default function GroupsScreen() {
               setEditingGroup(item);
               setModalVisible(true);
             }}
-            onDelete={() =>
-              request(() => deleteGroup(item.id)).then(loadGroups)
-            }
+            onDelete={() => handleDeleteGroup(item.id)}
           />
         )}
       />
@@ -71,7 +68,7 @@ export default function GroupsScreen() {
           setModalVisible(true);
         }}
         style={{ marginTop: 12, backgroundColor: "#387373" }}
-        labelStyle={{ color: "#ffffffff" }}
+        labelStyle={{ color: "#fff" }}
       />
 
       <GroupFormModal

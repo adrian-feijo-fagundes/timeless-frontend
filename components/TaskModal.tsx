@@ -6,8 +6,7 @@ import { Text } from "react-native-paper";
 import AuthButton from "@/components/AuthButton";
 import AuthTextInput from "@/components/AuthTextInput";
 import GroupSelector from "@/components/GroupSelector";
-import { useApi } from "@/hooks/useApi";
-import { listGroups } from "@/services/groups";
+import { useGroups } from "@/contexts/GroupsContext";
 import { formatDateBR } from "@/utils/formatDate";
 
 type Props = {
@@ -23,44 +22,34 @@ export default function TaskFormModal({
   onSave,
   task,
 }: Props) {
-  const { request } = useApi();
+  const { groups } = useGroups();
 
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [limitDate, setLimitDate] = useState("");
   const [groupId, setGroupId] = useState<number | null>(null);
-  const [groups, setGroups] = useState<any[]>([]);
 
-  /* ---------------- CARREGAR GRUPOS ---------------- */
-  useEffect(() => {
-    async function loadGroups() {
-      const res = await request(() => listGroups());
-      if (res) setGroups(res);
-    }
-
-    loadGroups();
-  }, [request]);
-
-  /* ---------------- EDIT / CREATE ---------------- */
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setLimitDate(formatDateBR(task.limitDate) ?? "");
       setGroupId(task.group?.id ?? null);
+      setTopic(task.topic ?? "");
     } else {
       setTitle("");
+      setTopic("");
       setLimitDate("");
       setGroupId(null);
     }
-  }, [task]);
+  }, [task, visible]);
 
   function handleSave() {
     if (!title.trim()) return;
 
     onSave({
       title,
-      limitDate,
       topic,
+      limitDate,
       groupId,
     });
   }
