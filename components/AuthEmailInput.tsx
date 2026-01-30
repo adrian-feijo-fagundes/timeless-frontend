@@ -26,13 +26,13 @@ export default function AuthTextInput({
         },
         style,
       ]}
-      outlineColor={isLight ? "#387373" : "#ffffff"}
-      activeOutlineColor={isLight ? "#387373" : "#ffffff"}
+      outlineColor={isLight ? "#1524a7" : "#ffffff"}
+      activeOutlineColor={isLight ? "#1524a7" : "#ffffff"}
       textColor={isLight ? "#000000" : "#ffffff"}
       theme={{
         colors: {
-          primary: isLight ? "#387373" : "#ffffff",
-          onSurfaceVariant: isLight ? "#387373" : "#ffffff",
+          primary: isLight ? "#1524a7" : "#ffffff",
+          onSurfaceVariant: isLight ? "#1524a7" : "#ffffff",
           placeholder: isLight ? "#6B6B6B" : "#ffffff",
           background: "transparent",
         },

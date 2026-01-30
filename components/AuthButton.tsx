@@ -7,7 +7,7 @@ type AuthButtonProps = {
   title: string;
   onPress: () => void;
   loading?: boolean;
-  variant?: "dark" | "light";
+  variant?: "light" | "dark";
   style?: ViewStyle;
   labelStyle?: TextStyle;
 };
@@ -16,11 +16,11 @@ export default function AuthButton({
   title,
   onPress,
   loading,
-  variant = "dark",
+  variant = "light",
   style,
   labelStyle,
 }: AuthButtonProps) {
-  const isLight = variant === "light";
+  const isLight = variant === "dark";
 
   // BOTÃO BRANCO (FUNDO VERDE)
   if (isLight) {
@@ -39,10 +39,10 @@ export default function AuthButton({
     );
   }
 
-  // BOTÃO VERDE (FUNDO BRANCO)
+  // BOTÃO AZUL (FUNDO BRANCO)
   return (
     <LinearGradient
-      colors={["#4B9F9F", "#2E5D5D"]}
+      colors={["#ffffffff", "#ffffffff"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[styles.gradient, style]}
@@ -52,7 +52,7 @@ export default function AuthButton({
         onPress={onPress}
         loading={loading}
         disabled={loading}
-        rippleColor="#8FD3D3"
+        rippleColor="#3626a0ff"
         style={styles.transparentBtn}
         labelStyle={[styles.greenLabel, labelStyle]}
         contentStyle={styles.content}
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
 
   whiteBtn: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#060404ff",
     borderRadius: 10,
     marginTop: 6,
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
 
   greenLabel: {
-    color: "#FFFFFF",
+    color: "#3626a0ff",
     fontWeight: "700",
     fontSize: 16,
   },

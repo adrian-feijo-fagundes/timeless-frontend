@@ -73,7 +73,7 @@ export default function RegisterScreen() {
 
   return (
       <LinearGradient
-        colors={["#3F8F8F", "#387373", "#023030ff", "#012020ff",]}
+        colors={["#7783e8ff", "#3240bbff", "#1524a7", "#000000ff"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.container}
@@ -115,7 +115,7 @@ export default function RegisterScreen() {
             <HelperText
               type="error"
               visible={!!error}
-              style={{ color: "#000000ff", fontWeight: "bold" }}
+              style={{ color: "#ffffffff", fontWeight: "bold" }}
             >
               {error}
             </HelperText>
