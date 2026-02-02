@@ -15,10 +15,11 @@ import {
 
 import AnswerLink from "@/components/Answerlink";
 import AuthButton from "@/components/AuthButton";
+import AuthEmailInput from "@/components/AuthEmailInput";
 import AuthPasswordInput from "@/components/AuthPasswordInput";
-import AuthTextInput from "@/components/AuthTextInput";
 import { loginUser } from "@/services/authService";
-
+import { LinearGradient } from "expo-linear-gradient";
+import { HelperText } from "react-native-paper";
 
 export default function LoginScreen() {
   const { setLogged } = useAppData();
@@ -33,9 +34,9 @@ export default function LoginScreen() {
       setError("Preencha todos os campos!");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       await loginUser(email, password);
       setLogged(true);
@@ -44,56 +45,73 @@ export default function LoginScreen() {
       setError(err.message);
       Alert.alert("Erro", err.message);
     }
-  
+
     setLoading(false);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} disabled={Platform.OS === "web"}>
-      <KeyboardAvoidingView
+    <TouchableWithoutFeedback
+      onPress={Keyboard.dismiss}
+      accessible={false}
+      disabled={Platform.OS === "web"}
+    >
+      <LinearGradient
+        colors={["#3F8F8F", "#387373", "#023030ff", "#012020ff"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.inner}>
-          <Image
-            source={require("../../assets/images/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={styles.inner}>
+            <Image
+              source={require("../../assets/images/icon.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-          <Text style={styles.title}>Bem-vindo</Text>
-          <Text style={styles.subtitle}>Faça login para continuar</Text>
+            <Text style={styles.title}>Bem-vindo</Text>
+            <Text style={styles.subtitle}>Faça login para continuar</Text>
 
-          {/* EMAIL */}
-          <AuthTextInput
-            placeholder="E-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <AuthEmailInput
+              label="E-mail"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-          {/* SENHA */}
-          <AuthPasswordInput
-            placeholder="Senha"
-            value={password}
-            onChangeText={setPassword}
-          />
+            <AuthPasswordInput
+              value={password}
+              onChangeText={setPassword}
+              style={{ marginTop: 5 }}
+            />
 
-          
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          {/* BOTÃO COM AUTHBUTTON */}
-          <AuthButton
-            title="Entrar"
-            onPress={handleLogin}
-            loading={loading}
-            style={{ marginTop: 12 }}
-          />
+            <HelperText
+              type="error"
+              visible={!!error}
+              style={{ color: "#000000ff", fontWeight: "bold" }}
+            >
+              {error}
+            </HelperText>
 
-          {/* LINK PARA CADASTRAR */}
-          <AnswerLink href="/register" linkText="Cadastre-se" answer="Não tem conta?"/>
-        </View>
-      </KeyboardAvoidingView>
+            <AuthButton
+              title="Entrar"
+              onPress={handleLogin}
+              loading={loading}
+              style={{ marginTop: 12 }}
+            />
+
+            <AnswerLink
+              href="/register"
+              linkText="Cadastre-se"
+              answer="Não tem conta?"
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </TouchableWithoutFeedback>
   );
 }
@@ -126,10 +144,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#d9d9d9",
     marginBottom: 20,
-  },
-  error: {
-    color: "#FFD1D1",
-    marginVertical: 10,
-    textAlign: "center",
   },
 });

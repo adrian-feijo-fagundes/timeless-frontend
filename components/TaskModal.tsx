@@ -1,82 +1,114 @@
-import { FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
-import {
-  Keyboard,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+// components/TaskFormModal.tsx
+import React, { useEffect, useState } from "react";
+import { Modal, StyleSheet, View } from "react-native";
+import { Text } from "react-native-paper";
 
-export function TaskModal({ visible, onClose, onSave }: any) {
+import AuthButton from "@/components/AuthButton";
+import AuthTextInput from "@/components/AuthTextInput";
+import GroupSelector from "@/components/GroupSelector";
+import { useGroups } from "@/contexts/GroupsContext";
+import { formatDateBR } from "@/utils/formatDate";
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (data: any) => void;
+  task?: any;
+};
+
+export default function TaskFormModal({
+  visible,
+  onClose,
+  onSave,
+  task,
+}: Props) {
+  const { groups } = useGroups();
+
   const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [isHabit, setIsHabit] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [limitDate, setLimitDate] = useState("");
+  const [groupId, setGroupId] = useState<number | null>(null);
 
-  const save = () => {
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setLimitDate(formatDateBR(task.limitDate) ?? "");
+      setGroupId(task.group?.id ?? null);
+      setTopic(task.topic ?? "");
+    } else {
+      setTitle("");
+      setTopic("");
+      setLimitDate("");
+      setGroupId(null);
+    }
+  }, [task, visible]);
+
+  function handleSave() {
     if (!title.trim()) return;
 
-    onSave({ title, desc, isHabit });
+    onSave({
+      title,
+      topic,
+      limitDate,
+      groupId,
+    });
+  }
 
-    setTitle("");
-    setDesc("");
-    setIsHabit(false);
-    Keyboard.dismiss();
+  const formatDate = (text: string) => {
+    const numbersOnly = text.replace(/\D/g, "");
+
+    if (numbersOnly.length <= 2) return numbersOnly;
+    if (numbersOnly.length <= 4)
+      return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(2)}`;
+
+    return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(
+      2,
+      4
+    )}/${numbersOnly.slice(4, 8)}`;
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} >
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.box}>
-              <Text style={styles.header}>Nova Tarefa</Text>
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={styles.overlay}>
+        <View style={styles.modal}>
+          <Text style={styles.title}>
+            {task ? "Editar Tarefa" : "Nova Tarefa"}
+          </Text>
 
-              <TextInput
-                placeholder="Título"
-                value={title}
-                onChangeText={setTitle}
-                style={styles.input}
-              />
+          <AuthTextInput
+            label="Título (obrigatório)"
+            value={title}
+            onChangeText={setTitle}
+          />
 
-              <TextInput
-                placeholder="Descrição (opcional)"
-                value={desc}
-                onChangeText={setDesc}
-                style={[styles.input, { height: 80 }]}
-                multiline
-              />
+          <AuthTextInput
+            label="Tópico (opcional)"
+            value={topic}
+            onChangeText={setTopic}
+            mode="outlined"
+            style={{ marginBottom: 12 }}
+          />
 
-              {/* Toggle hábito */}
-              <TouchableOpacity
-                onPress={() => setIsHabit(!isHabit)}
-                style={styles.habitRow}
-              >
-                <FontAwesome
-                  name={isHabit ? "check-square-o" : "square-o"}
-                  size={22}
-                  color="#387373"
-                />
-                <Text style={styles.habitText}>Isto é um hábito</Text>
-              </TouchableOpacity>
+          <AuthTextInput
+            label="Data limite (DD-MM-YYYY)"
+            value={limitDate}
+            onChangeText={(text) => setLimitDate(formatDate(text))}
+            keyboardType="numeric"
+            mode="outlined"
+          />
 
-              {/* Buttons */}
-              <View style={styles.btnRow}>
-                <TouchableOpacity style={styles.cancel} onPress={onClose}>
-                  <FontAwesome name="times" size={18} color="#fff" />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.save} onPress={save}>
-                  <FontAwesome name="check" size={18} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+          {/* SELECTOR DE GRUPO */}
+          <GroupSelector
+            groups={groups}
+            value={groupId}
+            onChange={setGroupId}
+          />
+          <View style={styles.buttons}>
+            <AuthButton title="Salvar" onPress={handleSave} variant="light" />
+            <AuthButton title="Cancelar" onPress={onClose} variant="light" />
+          </View>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     </Modal>
   );
 }
@@ -84,42 +116,23 @@ export function TaskModal({ visible, onClose, onSave }: any) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,.3)",
+    backgroundColor: "#38737366",
     justifyContent: "center",
-    padding: 20,
   },
-  box: {
-    backgroundColor: "#fff",
+  modal: {
+    backgroundColor: "#387373",
+    margin: 20,
     padding: 20,
     borderRadius: 12,
   },
-  header: { fontSize: 20, fontWeight: "bold", marginBottom: 16 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#fff",
     marginBottom: 12,
   },
-  habitRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  habitText: { fontSize: 16 },
-  btnRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  buttons: {
     marginTop: 16,
-  },
-  cancel: {
-    backgroundColor: "#E74C3C",
-    padding: 12,
-    borderRadius: 8,
-    width: "48%",
-    alignItems: "center",
-  },
-  save: {
-    backgroundColor: "#387373",
-    padding: 12,
-    borderRadius: 8,
-    width: "48%",
-    alignItems: "center",
+    gap: 10,
   },
 });

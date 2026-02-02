@@ -1,5 +1,6 @@
+import { useAppData } from "@/contexts/AppDataContext";
+import { getGamification } from "@/services/gameficationService";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import api from "../services/api";
 
 type Achievement = {
   id: number;
@@ -20,70 +21,53 @@ type GamificationData = {
   achievements: Achievement[];
 };
 
-type CompleteTaskResponse = {
-  task: any;
-  gamification: {
-    xpGained: number;
-    leveledUp: boolean;
-    newLevel?: number;
-    rewardXp?: number;
-    streak: number;
-    isNewStreakRecord: boolean;
-  };
-};
-
 type GamificationContextType = {
   data: GamificationData | null;
   loading: boolean;
-  fetchGamification: () => Promise<void>;
-  completeTask: (taskId: number) => Promise<CompleteTaskResponse>;
+  refresh: () => Promise<void>;
 };
 
-const GamificationContext = createContext<GamificationContextType>({
-  data: null,
-  loading: false,
-  fetchGamification: async () => {},
-  completeTask: async () => {
-    throw new Error("Function not implemented");
-  },
-});
+const GamificationContext = createContext<GamificationContextType>(
+  {} as GamificationContextType
+);
 
-export const GamificationProvider = ({ children }: { children: React.ReactNode }) => {
+export function GamificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { logged } = useAppData();
   const [data, setData] = useState<GamificationData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const fetchGamification = async () => {
+  async function refresh() {
+    if (!logged) return;
     try {
       setLoading(true);
-      const response = await api.get("/gamification");
-      setData(response.data);
+      const res = await getGamification();
+      setData(res);
+    } catch (err) {
+      console.log("Erro ao buscar gamificação:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const completeTask = async (taskId: number) => {
-    const response = await api.patch(`/task/${taskId}/complete`);
-    await fetchGamification();
-    return response.data as CompleteTaskResponse;
-  };
+  }
 
   useEffect(() => {
-    fetchGamification();
-  }, []);
+    if (logged) {
+      refresh();
+    } else {
+      setData(null);
+    }
+  }, [logged]);
 
   return (
-    <GamificationContext.Provider
-      value={{
-        data,
-        loading,
-        fetchGamification,
-        completeTask,
-      }}
-    >
+    <GamificationContext.Provider value={{ data, loading, refresh }}>
       {children}
     </GamificationContext.Provider>
   );
-};
+}
 
-export const useGamification = () => useContext(GamificationContext);
+export function useGamification() {
+  return useContext(GamificationContext);
+}

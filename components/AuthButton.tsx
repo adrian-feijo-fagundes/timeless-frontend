@@ -1,51 +1,104 @@
 import React from "react";
-import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle } from "react-native";
+import { StyleSheet, TextStyle, ViewStyle } from "react-native";
+import { Button } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 
 type AuthButtonProps = {
   title: string;
   onPress: () => void;
   loading?: boolean;
+  variant?: "dark" | "light";
   style?: ViewStyle;
+  labelStyle?: TextStyle;
 };
 
-export default function AuthButton({ title, onPress, loading, style }: AuthButtonProps) {
+export default function AuthButton({
+  title,
+  onPress,
+  loading,
+  variant = "dark",
+  style,
+  labelStyle,
+}: AuthButtonProps) {
+  const isLight = variant === "light";
+
+  // BOTÃO BRANCO (FUNDO VERDE)
+  if (isLight) {
+    return (
+      <Button
+        mode="contained"
+        onPress={onPress}
+        loading={loading}
+        disabled={loading}
+        style={[styles.whiteBtn, style]}
+        labelStyle={[styles.whiteLabel, labelStyle]}
+        contentStyle={styles.content}
+      >
+        {title}
+      </Button>
+    );
+  }
+
+  // BOTÃO VERDE (FUNDO BRANCO)
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.btn,
-        pressed && styles.btnPressed,
-        loading && styles.btnDisabled,
-        style,
-      ]}
-      onPress={onPress}
-      disabled={loading}
+    <LinearGradient
+      colors={["#4B9F9F", "#2E5D5D"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.gradient, style]}
     >
-      {loading ? (
-        <ActivityIndicator color="#387373" />
-      ) : (
-        <Text style={styles.btnText}>{title}</Text>
-      )}
-    </Pressable>
+      <Button
+        mode="contained"
+        onPress={onPress}
+        loading={loading}
+        disabled={loading}
+        rippleColor="#8FD3D3"
+        style={styles.transparentBtn}
+        labelStyle={[styles.greenLabel, labelStyle]}
+        contentStyle={styles.content}
+      >
+        {title}
+      </Button>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  btn: {
-    height: 48,
-    backgroundColor: "#ffffffff",
+  gradient: {
     borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
     marginTop: 6,
   },
-  btnPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+
+  transparentBtn: {
+    backgroundColor: "transparent",
+    borderRadius: 10,
+
+    elevation: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+
+    overflow: "hidden",
   },
-  btnDisabled: {
-    opacity: 0.6,
+
+  whiteBtn: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    marginTop: 6,
   },
-  btnText: {
+
+  content: {
+    paddingVertical: 10,
+  },
+
+  greenLabel: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
+  whiteLabel: {
     color: "#387373",
     fontWeight: "700",
     fontSize: 16,

@@ -1,12 +1,16 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { useGamification } from "@/contexts/GamificationContext";
+import { StyleSheet, View } from "react-native";
+import { Text } from "react-native-paper";
 
-export function StreakCounter({ streak }: { streak: number }) {
+export function StreakCounter() {
+  const { data } = useGamification();
+  if (!data) return null;
+
   return (
     <View style={styles.container}>
-      <FontAwesome name="fire" size={22} color="#FF6B35" />
-      <Text style={styles.text}>{streak} dias seguidos</Text>
+      <Text style={{ color: "#387373" }}>
+        {data.taskStreak} tarefas completadas
+      </Text>
     </View>
   );
 }
@@ -15,8 +19,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  text: { fontSize: 16, fontWeight: "bold", color: "#333" },
 });

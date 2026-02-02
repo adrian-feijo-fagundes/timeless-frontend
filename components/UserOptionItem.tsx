@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -20,19 +20,24 @@ export const handleLogout = async () => {
 export function UserOptionItem({ title, icon, route, onPress }: Props) {
   const handlePress = () => {
     if (onPress) return onPress();
-    if (route) return router.push(route);
+    if (route) {
+      const normalized = route.startsWith("/") ? route : `/${route}`;
+      return router.push(normalized as RelativePathString);
+    }
   };
 
   return (
-    <Pressable 
+    <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [
-        styles.container,
-        pressed && styles.pressed
-      ]}
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
     >
       <View style={styles.left}>
-        <FontAwesome name={icon} size={20} color="#387373" style={styles.icon} />
+        <FontAwesome
+          name={icon}
+          size={20}
+          color="#387373"
+          style={styles.icon}
+        />
         <Text style={styles.title}>{title}</Text>
       </View>
 
@@ -41,21 +46,22 @@ export function UserOptionItem({ title, icon, route, onPress }: Props) {
   );
 }
 
-
 export default function ProfileOptions() {
   return (
     <View>
-      <UserOptionItem 
+      <UserOptionItem
         title="Informações Pessoais"
         icon="user"
-        route="/PersonalInfo"
+        route="user/PersonalInfo"
       />
 
-      <UserOptionItem 
-        title="Logout"
-        icon="sign-out"
-        onPress={handleLogout}
+      <UserOptionItem
+        title="Segurança"
+        icon="lock"
+        route="user/Security"
       />
+
+      <UserOptionItem title="Logout" icon="sign-out" onPress={handleLogout} />
     </View>
   );
 }
@@ -66,11 +72,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 15,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderColor: "#E8E8E8",
-    minHeight: 60,
+    borderColor: "#d8d8d8ff",
+    minHeight: 90,
   },
   pressed: {
     backgroundColor: "#38737320",

@@ -1,11 +1,17 @@
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 import { GamificationProvider } from "@/contexts/GamificationContext";
+import { GroupsProvider } from "@/contexts/GroupsContext";
+import { TasksProvider } from "@/contexts/TasksContext";
 import { checkAuth } from "@/services/authService";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
-
+import { Provider as PaperProvider } from "react-native-paper";
 function RootLayoutInner() {
   const colorScheme = useColorScheme();
   const { logged, setLogged } = useAppData();
@@ -50,8 +56,16 @@ function RootLayoutInner() {
 
 export default function RootLayout() {
   return (
-    <AppDataProvider>
-      <RootLayoutInner />
-    </AppDataProvider>
+    <PaperProvider>
+      <AppDataProvider>
+        <TasksProvider>
+          <GroupsProvider>
+            <GamificationProvider>
+              <RootLayoutInner />
+            </GamificationProvider>
+          </GroupsProvider>
+        </TasksProvider>
+      </AppDataProvider>
+    </PaperProvider>
   );
 }

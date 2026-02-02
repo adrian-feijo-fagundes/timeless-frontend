@@ -1,63 +1,59 @@
-
 import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  TextInputProps,
-} from "react-native";
-import AuthTextInput from "./AuthTextInput";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { StyleSheet } from "react-native";
+import { TextInput } from "react-native-paper";
 
-export default function AuthPasswordInput(props: TextInputProps) {
+type Props = {
+  variant?: "dark" | "light";
+} & React.ComponentProps<typeof TextInput>;
+
+export default function AuthPasswordInput({
+  variant = "dark",
+  style,
+  ...props
+}: Props) {
   const [secure, setSecure] = useState(true);
 
-  return (
-    <View style={styles.row}>
-      <AuthTextInput
-        {...props}
-        secureTextEntry={secure}
-        style={[styles.input, props.style]}
-        placeholderTextColor="#ffffffff"
-      />
+  const isLight = variant === "light";
 
-      <TouchableOpacity
-        onPress={() => setSecure((prev) => !prev)}
-        style={styles.showBtn}
-      >
-        <FontAwesome5
-          name={secure ? "eye-slash" : "eye"}
-          size={20}
-          color="#ffffffff" 
+  return (
+    <TextInput
+      {...props}
+      mode="outlined"
+      secureTextEntry={secure}
+      label={props.label ?? "Senha"}
+      style={[
+        styles.input,
+        {
+          backgroundColor: isLight
+            ? "#E6F2F0" // verde claro no fundo branco
+            : "rgba(1, 29, 24, 0.43)",
+        },
+        style,
+      ]}
+      outlineColor={isLight ? "#387373" : "#ffffff"}
+      activeOutlineColor={isLight ? "#387373" : "#ffffff"}
+      textColor={isLight ? "#000000" : "#ffffff"}
+      right={
+        <TextInput.Icon
+          icon={secure ? "eye" : "eye-off"}
+          onPress={() => setSecure((p) => !p)}
+          color={isLight ? "#387373" : "#ffffff"}
         />
-      </TouchableOpacity>
-    </View>
+      }
+      theme={{
+        colors: {
+          primary: isLight ? "#387373" : "#ffffff",
+          onSurfaceVariant: isLight ? "#387373" : "#ffffff",
+          placeholder: isLight ? "#6B6B6B" : "#ffffff",
+          background: "transparent",
+        },
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
   input: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#ffffffff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "#4B9F9F",
-    color: "#fff",
-  },
-  showBtn: {
-    paddingHorizontal: 10,
-    marginLeft: -45,
-
-    justifyContent: "center",
-    height: 40,
-    alignItems: "center"
+    marginBottom: 10,
   },
 });

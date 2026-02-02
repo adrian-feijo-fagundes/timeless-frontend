@@ -61,7 +61,7 @@ export default function AuthDateInput({ value, onChange }: Props) {
             onChange={handleWebChange}
             value={
               value
-                ? value.toISOString().split("T")[0] // yyyy-mm-dd
+                ? value.toISOString().split("T")[0] 
                 : ""
             }
           />
@@ -73,15 +73,15 @@ export default function AuthDateInput({ value, onChange }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   input: {
-    height: 48,
+    height: 52,
     borderWidth: 1,
     borderColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 4,
     paddingHorizontal: 12,
-    backgroundColor: "#4B9F9F",
+    backgroundColor: "rgba(1, 29, 24, 0.43)",
 
     flexDirection: "row",
     alignItems: "center",
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#fff",
+    fontWeight: "bold",
   },
 
   webInput: {

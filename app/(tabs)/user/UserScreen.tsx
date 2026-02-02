@@ -63,13 +63,13 @@ export default function UserScreen() {
         <UserOptionItem
           title="Informações Pessoais"
           icon="user"
-          route="/user/PersonalInfo"
+          route="user/PersonalInfo"
         />
 
         <UserOptionItem
           title="Segurança"
           icon="lock"
-          route="/profile/security"
+          route="user/Security"
         />
 
         <View style={{ marginTop: 30 }}>
