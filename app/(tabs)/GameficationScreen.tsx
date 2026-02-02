@@ -1,7 +1,7 @@
 import { useGamification } from "@/contexts/GamificationContext";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 
 import {
   ActivityIndicator,
@@ -64,7 +64,8 @@ export default function GameficationScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.card}
           >
-            <Text style={styles.cardTitle}>Tarefas Completadas</Text>
+            <Text style={styles.cardTitle}>Tarefas</Text>
+            <Text style={styles.cardTitle}>Completadas</Text>
             <Text style={styles.bigNumber}>{data.totalTasksCompleted}</Text>
           </LinearGradient>
         </Card>
@@ -76,7 +77,8 @@ export default function GameficationScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.card}
           >
-            <Text style={styles.cardTitle}>Tarefas          Criadas</Text>
+            <Text style={styles.cardTitle}>Tarefas</Text>
+            <Text style={styles.cardTitle}>Criadas</Text>
             <Text style={styles.bigNumber}>{data.totalTasksCreated}</Text>
           </LinearGradient>
         </Card>
